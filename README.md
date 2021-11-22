@@ -22,6 +22,12 @@ repository except for building base images which have mirrors set.
 
 The images can be pulled from the [named docker volume](#get-built-images)
 
+The [terminal](./terminal/main.json) image is only supported for debian and
+allows live booting over pxe. This requires serving exported files by
+packer(the kernel, initrd and squashfs) over http and setting the kernel parameters 
+`boot=live fetch=http://<url>/terminal/debian-11.0-amd64-qemu/debian-11.0-amd64.squashfs`
+
+
 ### Building debian images
 
 Export the distribution to build 
