@@ -1,0 +1,105 @@
+{
+  "builders": [
+    {
+      "type": "qemu",
+      "iso_url": "{{ user `image_uri` }}/{{user `name`}}-qemu/{{user `name`}}.qcow2",
+      "iso_checksum": "file:{{ user `image_uri` }}/{{user `name`}}-qemu/{{user `name`}}.sha256",
+      "iso_target_extension": "qcow2",
+      "output_directory": "{{user `build_directory`}}/{{user `name`}}-qemu",
+      "shutdown_command": "sudo systemctl poweroff",
+      "cpus": "{{user `cpus`}}",
+      "boot_wait": "10s",
+      "memory": "{{user `memory`}}",
+      "disk_size": "{{user `disk_size`}}",
+      "disk_image": true,
+      "format": "qcow2",
+      "accelerator": "kvm",
+      "vm_name": "{{user `name`}}.qcow2",
+      "net_device": "virtio-net",
+      "disk_interface": "virtio",
+      "disk_discard": "unmap",
+      "disk_compression": true,
+      "communicator": "ssh",
+      "ssh_username": "provision",
+      "ssh_password": "provision",
+      "ssh_timeout": "30m",
+      "headless": "{{ user `headless`}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "environment_vars": [
+        "DEV_DISK=/dev/vda",
+        "DEV_PARTITION_NR=3"
+      ],
+      "scripts": [
+        "scripts/disk_resize.sh"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline_shebang": "/bin/bash -ex",
+      "inline": [
+        "sudo lvresize -r -l +100%FREE vg_host/lv_var"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo bash -c '{{ .Path }}'",
+      "scripts": [
+        "scripts/network_wait.sh",
+        "scripts/add_root_keys.sh",
+        "scripts/{{ user `os` }}/setup_ansible.sh"
+      ]
+    },
+    {
+      "type": "ansible",
+      "playbook_file": "./kubernetes/playbook_kubernetes.yml",
+      "user": "provision",
+      "extra_arguments": [
+        "--become",
+        "--extra-vars", "ansible_remote_tmp=/tmp/ansible"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo bash -c '{{ .Path }}'",
+      "scripts": [
+        "scripts/{{ user `os` }}/cleanup.sh",
+        "scripts/cleanup_host.sh",
+        "scripts/cleanup_logs.sh",
+        "scripts/minimize.sh"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "checksum",
+      "checksum_types": [
+          "sha256"
+      ],
+      "output": "{{user `build_directory`}}/{{user `name`}}-{{.BuilderType}}/{{user `name`}}.{{.ChecksumType}}"
+    },
+    {
+      "type": "manifest",
+      "output": "packer-manifest.json",
+      "strip_path": false,
+      "custom_data": {
+          "oscategory": "{{split (user `name`) \"-\" 0}}",
+          "osversion": "{{split (user `name`) \"-\" 1}}",
+          "architecture": "{{split (user `name`) \"-\" 2}}",
+          "template_slug": "{{user `name`}}"
+      }
+    },
+    {
+      "type": "shell-local",
+      "name": "upload",
+      "inline": [
+        "set -eux",
+        "scripts/qemu/minio_upload.sh \"{{user `build_directory`}}\" \"{{user `minio_output_target`}}\" \"{{user `name`}}\""
+      ]
+    }
+  ]
+}

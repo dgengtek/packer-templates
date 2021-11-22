@@ -1,0 +1,5 @@
+{
+  "os": "debian",
+  "name": "debian-11.0-armhf",
+  "lxd_name": "debian/11/armhf"
+}

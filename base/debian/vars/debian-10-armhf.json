@@ -1,0 +1,7 @@
+{
+  "iso_checksum": "8660593d10de0ce7577c9de4dab886ff540bc9843659c8879d8eea0ab224c109",
+  "iso_name": "debian-10.9.0-armhf-netinst.iso",
+  "mirror_directory": "current/armhf/iso-cd",
+  "name": "debian-10.9-armhf",
+  "lxd_name": "debian/10/armhf"
+}

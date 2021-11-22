@@ -1,0 +1,4 @@
+{
+  "minio_output_target": "data/images/packer",
+  "image_type": "terminal"
+}

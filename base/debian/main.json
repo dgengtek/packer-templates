@@ -1,0 +1,150 @@
+{
+  "builders": [
+    {
+      "boot_command": [
+       "<esc><wait>",
+        "install",
+       " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian-11.preseed",
+       " debian-installer=en_US",
+       " auto", 
+       " locale=en_US", 
+       " kbd-chooser/method=de",
+       " keyboard-configuration/xkb-keymap=de",
+       " netcfg/get_hostname=packer-debian-11",
+       " netcfg/get_domain=intranet",
+       " fb=false",
+       " debconf/frontend=noninteractive",
+       " console-setup/ask_detect=false",
+       " console-keymaps-at/keymap=de",
+        "<enter>"
+
+      ],
+      "type": "qemu",
+      "boot_wait": "1s",
+      "vm_name": "{{user `name`}}.qcow2",
+      "format": "qcow2",
+      "accelerator": "kvm",
+      "headless": "{{user `headless`}}",
+      "cpus": "{{user `cpus`}}",
+      "memory": "{{user `memory`}}",
+      "disk_size": "{{user `disk_size`}}",
+      "disk_interface": "virtio-scsi",
+      "disk_discard": "unmap",
+      "disk_compression": true,
+      "communicator": "ssh",
+      "vnc_bind_address": "0.0.0.0",
+      "ssh_wait_timeout": "30m",
+      "ssh_username": "provision",
+      "ssh_password": "provision",
+      "http_directory": "srv/debian",
+      "http_port_min": 8000,
+      "http_port_max": 8100,
+      "iso_url": "{{user `mirror`}}/{{user `mirror_directory`}}/{{user `iso_name`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "shutdown_command": "sudo systemctl poweroff",
+      "output_directory": "{{user `build_directory`}}/{{user `name`}}-qemu"
+    },
+    {
+      "type": "lxd",
+      "image": "images:{{user `lxd_name`}}",
+      "profile": "{{user `profile`}}",
+      "command_wrapper": "{{user `command_wrapper`}}",
+      "container_name": "packer-{{replace_all \"/\" \"-\" (user `lxd_name`)}}",
+      "output_image": "{{user `lxd_name`}}/base",
+      "publish_properties": {
+        "description": "debian 11 base image"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "only": ["qemu"],
+      "pause_before": "15s",
+      "inline": [
+        "echo 'wait for qemu reboot'"
+      ]
+    },
+    {
+      "type": "shell",
+      "only": ["lxd"],
+      "inline": [
+        "dhclient",
+        "apt-get update",
+        "apt-get install -y sudo"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "srv/99-dhcp-wildcard.network",
+      "destination": "/tmp/99-dhcp-wildcard.network"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo mv /tmp/99-dhcp-wildcard.network /etc/systemd/network/99-dhcp-wildcard.network",
+        "sudo chmod +r /etc/systemd/network/99-dhcp-wildcard.network"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "scripts": [
+        "scripts/debian/uninstall_network.sh",
+        "scripts/debian/fix_systemd_networkd.sh",
+        "scripts/install_systemd-networkd.sh",
+        "scripts/network_wait.sh",
+        "scripts/debian/install_requisites.sh",
+        "srv/enable_ssh.sh",
+        "scripts/debian/cleanup.sh",
+        "scripts/cleanup_host.sh",
+        "scripts/cleanup_logs.sh",
+        "scripts/minimize.sh"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "checksum",
+      "only": ["qemu"],
+      "checksum_types": [
+          "sha256"
+      ],
+      "output": "{{user `build_directory`}}/{{user `name`}}-{{.BuilderType}}/{{user `name`}}.{{.ChecksumType}}"
+    },
+    {
+      "type": "manifest",
+      "output": "packer-manifest.json",
+      "strip_path": false,
+      "custom_data": {
+          "oscategory": "{{split (user `name`) \"-\" 0}}",
+          "osversion": "{{split (user `name`) \"-\" 1}}",
+          "architecture": "{{split (user `name`) \"-\" 2}}",
+          "template_slug": "{{user `name`}}"
+      }
+    },
+    {
+      "type": "shell-local",
+      "only": ["lxd"],
+      "inline": [
+        "set -eux",
+        "artifact_id=`jq -r '[.builds[] | select(.name == \"lxd\")] | last.artifact_id' packer-manifest.json`",
+        "container_name=\"{{replace_all \"/\" \"_\" (user `lxd_name`)}}\"",
+        "minio_output_dir=\"{{user `minio_output_target`}}/${container_name}-lxd\"",
+        "mkdir -p \"output/${container_name}-lxd\"",
+        "cd \"output/${container_name}-lxd\"",
+        "lxc image export $artifact_id",
+        "bash ../../scripts/lxd/minio_upload.sh \"${artifact_id}.tar.gz\" \"$minio_output_dir\" \"$container_name\""
+      ]
+    },
+    {
+      "type": "shell-local",
+      "name": "upload",
+      "only": ["qemu"],
+      "inline": [
+        "set -eux",
+        "scripts/qemu/minio_upload.sh \"{{user `build_directory`}}\" \"{{user `minio_output_target`}}\" \"{{user `name`}}\""
+      ]
+    }
+  ]
+}

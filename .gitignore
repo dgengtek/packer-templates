@@ -1,0 +1,20 @@
+# Cache objects
+packer_cache/
+packer-manifest.json
+
+# Crash log
+crash.log
+
+# For built boxes
+*.box
+
+# ignore build outputs
+output
+*.raw
+*.qcow2
+
+tags
+tags.lock
+
+# lxd builds
+*.tar.gz

@@ -1,0 +1,122 @@
+{
+  "builders": [
+    {
+      "type": "qemu",
+      "iso_url": "{{ user `image_uri` }}/{{user `name`}}-qemu/{{user `name`}}.qcow2",
+      "iso_checksum": "file:{{ user `image_uri` }}/{{user `name`}}-qemu/{{user `name`}}.sha256",
+      "iso_target_extension": "qcow2",
+      "output_directory": "{{user `build_directory`}}/{{user `name`}}-qemu",
+      "shutdown_command": "sudo systemctl poweroff",
+      "cpus": "{{user `cpus`}}",
+      "boot_wait": "10s",
+      "memory": "{{user `memory`}}",
+      "disk_size": "{{user `disk_size`}}",
+      "disk_image": true,
+      "format": "qcow2",
+      "accelerator": "kvm",
+      "vm_name": "{{user `name`}}.qcow2",
+      "net_device": "virtio-net",
+      "disk_interface": "virtio",
+      "disk_discard": "unmap",
+      "disk_compression": true,
+      "communicator": "ssh",
+      "ssh_username": "provision",
+      "ssh_password": "provision",
+      "ssh_timeout": "30m",
+      "headless": "{{ user `headless`}}"
+    },
+    {
+      "type": "lxd",
+      "image": "{{user `lxd_name`}}/base",
+      "profile": "{{user `profile`}}",
+      "command_wrapper": "{{user `command_wrapper`}}",
+      "container_name": "packer-kitchen-{{replace_all \"/\" \"-\" (user `lxd_name`)}}",
+      "output_image": "{{user `lxd_name`}}/kitchen",
+      "publish_properties": {
+        "description": "{{ user `lxd_name` }} kitchen image"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "only": ["qemu"],
+      "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "environment_vars": [
+        "DEV_DISK=/dev/vda",
+        "DEV_PARTITION_NR=3"
+      ],
+      "scripts": [
+        "scripts/disk_resize.sh"
+      ]
+    },
+    {
+      "type": "shell",
+      "only": ["qemu"],
+      "inline_shebang": "/bin/bash -ex",
+      "inline": [
+        "cat /etc/fstab",
+        "sudo lvresize -r -l +50%FREE vg_host/lv_var",
+        "sudo lvresize -r -l +100%FREE vg_host/lv_root"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo bash -c '{{ .Path }}'",
+      "pause_before": "15s",
+      "scripts": [
+        "scripts/network_wait.sh",
+        "scripts/setup_kitchen.sh",
+        "scripts/{{ user `os` }}/install_kitchen_requirements.sh",
+        "scripts/{{ user `os` }}/cleanup.sh",
+        "scripts/cleanup_host.sh",
+        "scripts/cleanup_logs.sh",
+        "scripts/minimize.sh"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "checksum",
+      "only": ["qemu"],
+      "checksum_types": [
+          "sha256"
+      ],
+      "output": "{{user `build_directory`}}/{{user `name`}}-{{.BuilderType}}/{{user `name`}}.{{.ChecksumType}}"
+    },
+    {
+      "type": "manifest",
+      "output": "packer-manifest.json",
+      "strip_path": false,
+      "custom_data": {
+          "oscategory": "{{split (user `name`) \"-\" 0}}",
+          "osversion": "{{split (user `name`) \"-\" 1}}",
+          "architecture": "{{split (user `name`) \"-\" 2}}",
+          "template_slug": "{{user `name`}}"
+      }
+    },
+    {
+      "type": "shell-local",
+      "only": ["lxd"],
+      "inline": [
+        "set -eux",
+        "artifact_id=`jq -r '[.builds[] | select(.name == \"lxd\")] | last.artifact_id' packer-manifest.json`",
+        "container_name=\"{{replace_all \"/\" \"_\" (user `lxd_name`)}}\"",
+        "minio_output_dir=\"{{user `minio_output_target`}}/${container_name}-lxd\"",
+        "mkdir -p \"output/${container_name}-lxd\"",
+        "cd \"output/${container_name}-lxd\"",
+        "lxc image export $artifact_id",
+        "bash ../../scripts/lxd/minio_upload.sh \"${artifact_id}.tar.gz\" \"$minio_output_dir\" \"$container_name\""
+      ]
+    },
+    {
+      "type": "shell-local",
+      "name": "upload",
+      "only": ["qemu"],
+      "inline": [
+        "set -eux",
+        "scripts/qemu/minio_upload.sh \"{{user `build_directory`}}\" \"{{user `minio_output_target`}}\" \"{{user `name`}}\""
+      ]
+    }
+  ]
+}

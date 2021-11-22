@@ -1,0 +1,7 @@
+{
+  "disk_size": "4G",
+  "mirror": "http://cdimage.debian.org/cdimage/release",
+  "minio_output_target": "data/images/packer/base",
+  "profile": "packer",
+  "command_wrapper": ""
+}

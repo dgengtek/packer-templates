@@ -1,0 +1,40 @@
+export BUILD_DIRECTORY := env_var_or_default("BUILD_DIRECTORY", "output")
+export IMAGE_URI := env_var("IMAGE_URI")
+export SALT_GIT_URL := env_var_or_default("SALT_GIT_URL", "https://github.com/saltstack/salt")
+export SALT_VERSION_TAG := env_var_or_default("SALT_VERSION_TAG", "v3003.2.1")
+
+template := "./main.json"
+var_file := `fd --type f --exclude 'common.json' --max-depth 1 '.json' ../files | fzf -m --prompt='var_file> '`
+parent_image_type := `echo -e 'base,kitchen,cloud' | tr ',' '\n' | fzf -m --prompt='parent_image_type> '`
+disk_size := if parent_image_type == "kitchen" { "10G" } else { `jq -r .disk_size vars/common.json` }
+
+
+common_var_file := "./vars/common.json"
+extended_common := "../files/common.json"
+
+default:
+	@just --list
+
+
+# validate packer template
+check: 
+	packer validate -var-file={{common_var_file}} -var-file="{{var_file}}" -var 'disk_size={{disk_size}}' -var 'parent_image_type={{parent_image_type}}' -var-file={{extended_common}} "{{template}}"
+	
+
+# build all from template
+build:
+	packer build -var-file={{common_var_file}} -var-file="{{var_file}}" -var 'disk_size={{disk_size}}' -var 'parent_image_type={{parent_image_type}}' -var-file={{extended_common}} "{{template}}"
+
+
+# build only from variable {{provider}}
+only provider:
+	packer build -var-file={{common_var_file}} -only={{provider}} -var-file="{{var_file}}" -var 'disk_size={{disk_size}}' -var 'parent_image_type={{parent_image_type}}' -var-file={{extended_common}} "{{template}}"
+
+
+lxd profile:
+	packer build -only=lxd -var-file={{common_var_file}} -var-file="{{var_file}}" -var 'disk_size={{disk_size}}' -var 'parent_image_type={{parent_image_type}}' -var 'profile={{profile}}' -var-file={{extended_common}} "{{template}}"
+
+
+# build with docker, ignore upload
+docker:
+	packer build -except=upload -only=qemu -var-file={{common_var_file}} -var-file="{{var_file}}" -var 'disk_size={{disk_size}}' -var 'parent_image_type={{parent_image_type}}' -var 'profile={{profile}}' -var-file={{extended_common}} "{{template}}"

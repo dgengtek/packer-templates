@@ -1,0 +1,138 @@
+{
+    "builders": [
+      {
+        "type": "qemu",
+        "iso_url": "{{user `mirror`}}/{{user `mirror_directory`}}/{{user `name`}}.iso",
+        "iso_checksum": "file:{{user `mirror`}}/{{user `mirror_directory`}}/sha1sums.txt",
+        "http_directory": "srv",
+        "boot_wait": "1s",
+        "boot_command": [
+            "<enter><wait10><wait10><wait10><wait10>",
+            "curl -O 'http://{{ .HTTPIP }}:{{ .HTTPPort }}/{enable_ssh.sh,99-dhcp-wildcard.network,archlinux/install_chroot.sh}'<enter><wait>",
+            "bash ./enable_ssh.sh<enter><wait>",
+            "systemctl start sshd<enter>"
+        ],
+        "output_directory": "{{user `build_directory`}}/{{user `name`}}-qemu",
+        "shutdown_command": "sudo systemctl poweroff",
+        "cpus": "{{user `cpus`}}",
+        "memory": "{{user `memory`}}",
+        "disk_size": "{{user `disk_size`}}",
+        "disk_image": false,
+        "format": "qcow2",
+        "accelerator": "kvm",
+        "vm_name": "{{user `name`}}.qcow2",
+        "net_device": "virtio-net",
+        "disk_interface": "virtio",
+        "disk_discard": "unmap",
+        "disk_compression": true,
+        "ssh_username": "provision",
+        "ssh_password": "provision",
+        "ssh_timeout": "30m",
+        "headless": "{{ user `headless`}}"
+      },
+      {
+        "type": "lxd",
+        "image": "images:{{user `lxd_name`}}",
+        "profile": "{{user `profile`}}",
+        "container_name": "packer-{{replace_all \"/\" \"-\" (user `lxd_name`)}}",
+        "output_image": "{{user `lxd_name`}}/base",
+        "publish_properties": {
+          "description": "archlinux base image"
+        }
+      }
+    ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "only": ["qemu"],
+      "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "expect_disconnect": true,
+      "scripts": [
+        "scripts/archlinux/install.sh"
+      ]
+    },
+    {
+      "type": "shell",
+      "only": ["qemu"],
+      "pause_before": "15s",
+      "inline": [
+        "echo 'wait for qemu reboot'"
+      ]
+    },
+    {
+      "type": "file",
+      "only": ["lxd"],
+      "source": "srv/99-dhcp-wildcard.network",
+      "destination": "/tmp/99-dhcp-wildcard.network"
+    },
+    {
+      "type": "shell",
+      "only": ["lxd"],
+      "inline": [
+        "systemctl unmask systemd-networkd-wait-online || :",
+        "systemctl start systemd-networkd-wait-online",
+        "pacman -Syu --noconfirm sudo",
+        "mv /tmp/99-dhcp-wildcard.network /etc/systemd/network/99-dhcp-wildcard.network",
+        "chmod +r /etc/systemd/network/99-dhcp-wildcard.network"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "scripts": [
+        "scripts/install_systemd-networkd.sh",
+        "scripts/network_wait.sh",
+        "scripts/archlinux/install_requisites.sh",
+        "srv/enable_ssh.sh",
+        "scripts/archlinux/cleanup.sh",
+        "scripts/cleanup_host.sh",
+        "scripts/cleanup_logs.sh",
+        "scripts/minimize.sh"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "checksum",
+      "only": ["qemu"],
+      "checksum_types": [
+          "sha256"
+      ],
+      "output": "{{user `build_directory`}}/{{user `name`}}-{{.BuilderType}}/{{user `name`}}.{{.ChecksumType}}"
+    },
+    {
+      "type": "manifest",
+      "output": "packer-manifest.json",
+      "strip_path": false,
+      "custom_data": {
+          "oscategory": "{{split (user `name`) \"-\" 0}}",
+          "osversion": "{{split (user `name`) \"-\" 1}}",
+          "architecture": "{{split (user `name`) \"-\" 2}}",
+          "template_slug": "{{user `name`}}"
+      }
+    },
+    {
+      "type": "shell-local",
+      "only": ["lxd"],
+      "inline": [
+        "set -eux",
+        "artifact_id=`jq -r '[.builds[] | select(.name == \"lxd\")] | last.artifact_id' packer-manifest.json`",
+        "container_name=\"{{replace_all \"/\" \"_\" (user `lxd_name`)}}\"",
+        "minio_output_dir=\"{{user `minio_output_target`}}/${container_name}-lxd\"",
+        "mkdir -p \"output/${container_name}-lxd\"",
+        "cd \"output/${container_name}-lxd\"",
+        "lxc image export $artifact_id",
+        "bash ../../scripts/lxd/minio_upload.sh \"${artifact_id}.tar.gz\" \"$minio_output_dir\" \"$container_name\""
+      ]
+    },
+    {
+      "type": "shell-local",
+      "name": "upload",
+      "only": ["qemu"],
+      "inline": [
+        "set -eux",
+        "scripts/qemu/minio_upload.sh \"{{user `build_directory`}}\" \"{{user `minio_output_target`}}\" \"{{user `name`}}\""
+      ]
+    }
+  ]
+}

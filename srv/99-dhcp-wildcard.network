@@ -1,0 +1,16 @@
+[DHCP]
+SendHostname = yes
+UseDNS = yes
+UseDomains = yes
+UseHostname = yes
+UseNTP = yes
+
+[Match]
+Name = en* eth* veth*
+
+[Network]
+DHCP = yes
+IPForward = no
+IPv6AcceptRA = no
+LLMNR = no
+LinkLocalAddressing = no

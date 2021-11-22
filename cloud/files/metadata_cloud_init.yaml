@@ -1,0 +1,35 @@
+templates:
+  /var/lib/cloud/seed/nocloud-net/meta-data:
+    when:
+    - create
+    - copy
+    create_only: false
+    template: cloud-init-meta-data.tpl
+    properties: {}
+  /var/lib/cloud/seed/nocloud-net/network-config:
+    when:
+    - create
+    - copy
+    create_only: false
+    template: cloud-init-network-config.tpl
+    properties: {}
+  /var/lib/cloud/seed/nocloud-net/user-data:
+    when:
+    - create
+    - copy
+    create_only: false
+    template: cloud-init-user-data.tpl
+    properties:
+      default: |-
+        #cloud-config
+        {}
+  /var/lib/cloud/seed/nocloud-net/vendor-data:
+    when:
+    - create
+    - copy
+    create_only: false
+    template: cloud-init-vendor-data.tpl
+    properties:
+      default: |-
+        #cloud-config
+        {}

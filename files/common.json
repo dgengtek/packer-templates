@@ -1,0 +1,14 @@
+{
+  "build_directory": "{{env `BUILD_DIRECTORY`}}",
+  "build_timestamp": "{{isotime \"20060102150405\"}}",
+  "cpus": "2",
+  "memory": "1024",
+  "disk_size": "6G",
+  "headless": "true",
+  "http_proxy": "{{env `http_proxy`}}",
+  "https_proxy": "{{env `https_proxy`}}",
+  "no_proxy": "{{env `no_proxy`}}",
+  "iso_url": "{{env `IMAGE_URI`}}",
+  "profile": "packer",
+  "command_wrapper": ""
+}

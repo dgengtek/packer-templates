@@ -1,0 +1,10 @@
+---
+- name: 'Provision kubernetes'
+  hosts: default
+  become: true
+  vars:
+    kubernetes_version: 1.22.3
+  roles:
+    - ansible-role-docker
+    - role: ansible-role-kubernetes
+      kubernetes_role: '' # do not do any node setups
