@@ -4,13 +4,15 @@ This repository contains configurations for building arch and debian from instal
 
 ## Requirements
 
-See the [dockerfile](Dockerfile)
+* docker
+  * if building without a docker container see the [dockerfile](Dockerfile)
+* [X86_virtualization](https://en.wikipedia.org/wiki/X86_virtualization)
+* [kvm](https://en.wikipedia.org/wiki/Kernel-based_Virtual_Machine) bound on /dev/kvm
 
 
 Build the docker image for the required dependencies to build the images via packer
 
     $ bash main.sh docker
-
 
 
 ## Building images
