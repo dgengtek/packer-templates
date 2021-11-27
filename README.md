@@ -79,4 +79,4 @@ List available images
 
 Pull image from volume
 
-    $ bash main.sh get_image <absolute filename>
+    $ bash main.sh get_file <absolute filename>

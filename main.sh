@@ -302,7 +302,7 @@ _images() {
 }
 
 
-_get_image() {
+_get_file() {
   local filename=${1:?Filename required}
 
   local cid=$(sudo docker run -d \
