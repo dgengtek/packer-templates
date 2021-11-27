@@ -309,8 +309,9 @@ _get_file() {
     --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
     $DOCKER_IMAGE_NAME true)
   sudo docker cp ${cid}:$filename .
-  sudo chmod 600 ./$filename
-  sudo chown $(id -u):$(id -g) ./$filename
+  readonly base_filename=$(basename "$filename")
+  sudo chmod 600 ./$base_filename
+  sudo chown $(id -u):$(id -g) ./$base_filename
   sudo docker rm $cid
 }
 
