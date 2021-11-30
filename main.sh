@@ -333,6 +333,7 @@ _packer() {
     --env DISTRIBUTION="$DISTRIBUTION" \
     --env IMAGE_URI="$IMAGE_URI" \
     --device=/dev/kvm \
+    --mount type=bind,source=${PWD},target=/wd/,readonly \
     --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
     --rm -i "$DOCKER_IMAGE_NAME" -s -- <<'EOF'
 set -x

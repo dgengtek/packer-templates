@@ -131,7 +131,7 @@
     },
     {
       "type": "manifest",
-      "output": "packer-manifest.json",
+      "output": "{{user `build_directory`}}/packer-manifest.json",
       "strip_path": false,
       "custom_data": {
           "oscategory": "{{split (user `name`) \"-\" 0}}",

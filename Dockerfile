@@ -23,6 +23,4 @@ WORKDIR /wd
 
 VOLUME $BUILD_DIRECTORY
 
-ADD . /wd/
-
 ENTRYPOINT ["/bin/bash"]
