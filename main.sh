@@ -82,7 +82,7 @@ run() {
     shift
     _${command} "$@"
   else
-    exec "$@"
+    usage
   fi
 }
 
