@@ -74,9 +74,9 @@ Build cloud image based on the new base image
 
 List available images
 
-    $ bash main.sh images
+    $ bash main.sh list
 
 
 Pull image from volume
 
-    $ bash main.sh get_file <absolute filename>
+    $ bash main.sh cat '<absolute filename>' > '<local filename>'

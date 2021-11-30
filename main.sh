@@ -294,24 +294,21 @@ _sh() {
 }
 
 
-_images() {
+_list() {
   sudo docker run \
     --device=/dev/kvm \
     --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
-    --rm -i "$DOCKER_IMAGE_NAME" -c "fd -a -t f . /output"
+    --rm -i "$DOCKER_IMAGE_NAME" -c "fd -a -t f . /output | xargs ls -l"
 }
 
 
-_get_file() {
+_cat() {
   local filename=${1:?Filename required}
 
   local cid=$(sudo docker run -d \
     --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
     $DOCKER_IMAGE_NAME true)
-  sudo docker cp ${cid}:$filename .
-  readonly base_filename=$(basename "$filename")
-  sudo chmod 600 ./$base_filename
-  sudo chown $(id -u):$(id -g) ./$base_filename
+  sudo docker cp ${cid}:$filename -
   sudo docker rm $cid
 }
 
