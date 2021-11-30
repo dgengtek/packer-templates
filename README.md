@@ -50,6 +50,11 @@ Build kubernetes image based on the new cloud image
     $ PACKER_DIRECTORY="kubernetes" IMAGE_URI="/output/cloud" bash main.sh packer
 
 
+Build salt image based on the cloud image
+
+    $ PACKER_DIRECTORY=salt IMAGE_URI="/output" PARENT_IMAGE_TYPE=cloud bash main.sh packer
+
+
 ### Building archlinux images
 
 Export the distribution to build 

@@ -37,5 +37,5 @@ lxd profile: setup
 
 
 # build with docker, ignore upload
-docker: setup
-	packer build -except=upload -only=qemu -var-file={{common_var_file}} -var-file={{var_file}} -var-file={{extended_common}} {{packer_main}}
+docker *FLAGS: setup
+	packer build -except=upload -only=qemu -var-file={{common_var_file}} -var-file={{var_file}} -var-file={{extended_common}} {{FLAGS}} {{packer_main}}

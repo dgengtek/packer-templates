@@ -329,15 +329,18 @@ _packer() {
     --env PACKER_DIRECTORY="$PACKER_DIRECTORY" \
     --env DISTRIBUTION="$DISTRIBUTION" \
     --env IMAGE_URI="$IMAGE_URI" \
+    --env PARENT_IMAGE_TYPE="${PARENT_IMAGE_TYPE:-cloud}" \
+    --env SALT_GIT_URL="${SALT_GIT_URL:-https://github.com/saltstack/salt}" \
+    --env SALT_VERSION_TAG="${SALT_VERSION_TAG:-v3003.2.1}" \
     --device=/dev/kvm \
     --mount type=bind,source=${PWD},target=/wd/,readonly \
     --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
-    --rm -i "$DOCKER_IMAGE_NAME" -s -- <<'EOF'
+    --rm -i "$DOCKER_IMAGE_NAME" -s -- <<EOF
 set -x
-var_file="./${PACKER_DIRECTORY}/vars/${DISTRIBUTION}.json"
-test -f "$var_file" || var_file="./files/${DISTRIBUTION}.json"
-test -f "$var_file" || exit 1
-just --set var_file "$var_file" docker
+var_file="./\${PACKER_DIRECTORY}/vars/\${DISTRIBUTION}.json"
+test -f "\$var_file" || var_file="./files/\${DISTRIBUTION}.json"
+test -f "\$var_file" || exit 1
+just --set var_file "\$var_file" docker "$@"
 EOF
 }
 
