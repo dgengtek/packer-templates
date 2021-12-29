@@ -5,7 +5,7 @@
       "iso_url": "{{ user `image_uri` }}/{{user `parent_image_type`}}/{{user `name`}}-qemu/{{user `name`}}.qcow2",
       "iso_checksum": "file:{{ user `image_uri` }}/{{user `parent_image_type`}}/{{user `name`}}-qemu/{{user `name`}}.sha256",
       "iso_target_extension": "qcow2",
-      "output_directory": "{{user `build_directory`}}/{{user `name`}}-qemu",
+      "output_directory": "{{user `build_directory`}}/{{user `parent_image_type`}}/{{user `name`}}-qemu",
       "shutdown_command": "sudo systemctl poweroff",
       "cpus": "{{user `cpus`}}",
       "boot_wait": "10s",
@@ -88,11 +88,11 @@
       "checksum_types": [
           "sha256"
       ],
-      "output": "{{user `build_directory`}}/{{user `name`}}-{{.BuilderType}}/{{user `name`}}.{{.ChecksumType}}"
+      "output": "{{user `build_directory`}}/{{user `parent_image_type`}}/{{user `name`}}-{{.BuilderType}}/{{user `name`}}.{{.ChecksumType}}"
     },
     {
       "type": "manifest",
-      "output": "{{user `build_directory`}}/packer-manifest.json",
+      "output": "{{user `build_directory`}}/{{user `parent_image_type`}}/packer-manifest.json",
       "strip_path": false,
       "custom_data": {
           "oscategory": "{{split (user `name`) \"-\" 0}}",
@@ -120,7 +120,7 @@
       "only": ["qemu"],
       "inline": [
         "set -eux",
-        "scripts/qemu/convert_raw.sh \"{{user `build_directory`}}\" \"{{user `name`}}\""
+        "scripts/qemu/convert_raw.sh \"{{user `build_directory`}}/{{user `parent_image_type`}}\" \"{{user `name`}}\""
       ]
     },
     {
@@ -129,7 +129,7 @@
       "only": ["qemu"],
       "inline": [
         "set -eux",
-        "scripts/qemu/minio_upload.sh \"{{user `build_directory`}}\" \"{{user `minio_output_target`}}/{{user `parent_image_type`}}/salt\" \"{{user `name`}}\""
+        "scripts/qemu/minio_upload.sh \"{{user `build_directory`}}/{{user `parent_image_type`}}\" \"{{user `minio_output_target`}}/{{user `parent_image_type`}}/salt\" \"{{user `name`}}\""
       ]
     }
   ]
