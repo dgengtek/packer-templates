@@ -55,6 +55,14 @@ Build salt image based on the cloud image
     $ PACKER_DIRECTORY=salt IMAGE_URI="/output" PARENT_IMAGE_TYPE=cloud bash main.sh packer
 
 
+#### Example without wrappers
+
+Build the debian base image without docker and entrypoints main.sh, justfile.
+
+    $ export DISTRIBUTION="debian-11.2-amd64" PACKER_DIRECTORY="base/debian" IMAGE_URI="" BUILD_DIRECTORY="./output"
+    $ packer build -except=upload -only=qemu -var-file=./files/common.json -var-file=./base/debian/vars/debian-11.2-amd64.json -var-file=./base/debian/vars/common.json  ./base/debian/main.json
+
+
 ### Building archlinux images
 
 Export the distribution to build 
