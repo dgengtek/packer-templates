@@ -62,12 +62,17 @@
     },
     {
       "type": "shell",
-      "execute_command": "sudo bash -c '{{ .Path }}'",
-      "pause_before": "15s",
+      "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "environment_vars": [
+        "ENABLE_PKI_INSTALL={{user `enable_pki_install`}}",
+        "VAULT_ADDR={{user `vault_addr`}}",
+        "VAULT_PKI_SECRETS_PATH={{user `vault_pki_secrets_path`}}"
+      ],
       "scripts": [
         "scripts/network_wait.sh",
         "scripts/setup_kitchen.sh",
         "scripts/{{ user `os` }}/install_kitchen_requirements.sh",
+        "scripts/{{ user `os` }}/install_pki.sh",
         "scripts/{{ user `os` }}/cleanup.sh",
         "scripts/cleanup_host.sh",
         "scripts/cleanup_logs.sh",

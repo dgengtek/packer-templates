@@ -45,6 +45,11 @@ Build cloud image based on the new base image
     $ PACKER_DIRECTORY="cloud" IMAGE_URI="/output/base/debian" bash main.sh packer
 
 
+Build an image for kitchen based on the new base image
+
+    $ PACKER_DIRECTORY="kitchen" IMAGE_URI="/output/base/debian" bash main.sh packer
+
+
 Build kubernetes image based on the new cloud image
 
     $ PACKER_DIRECTORY="kubernetes" IMAGE_URI="/output/cloud" bash main.sh packer
