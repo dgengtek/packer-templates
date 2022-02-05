@@ -32,7 +32,7 @@ packer(the kernel, initrd and squashfs) over http and setting the kernel paramet
 
 Export the distribution to build 
 
-    $ export DISTRIBUTION="debian-11.1-amd64"
+    $ export DISTRIBUTION="debian-11.2-amd64"
 
 
 Build the debian base image.
