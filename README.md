@@ -92,7 +92,7 @@ List available images
 
 Pull image from volume
 
-    $ bash main.sh cat '<absolute filename>' > '<local filename>'
+    $ bash main.sh cat '<absolute filename>' | tar -xf - -C <output path>
 
 
 ## Notes
