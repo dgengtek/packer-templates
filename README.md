@@ -93,3 +93,9 @@ List available images
 Pull image from volume
 
     $ bash main.sh cat '<absolute filename>' > '<local filename>'
+
+
+## Notes
+
+* make sure to disable or remove the packer user for ssh login with sudo permissions 'provision:provision'(user:password)
+* the user provision expires after 35 days - you will need to rebuild a dependant base image if used for building other images by packer
