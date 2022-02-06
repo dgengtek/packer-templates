@@ -16,7 +16,7 @@ default:
 
 
 setup: 
-        : > {{var_overrides_file}} 
+        echo '{}' > {{var_overrides_file}} 
         {{PACKER_DIRECTORY}}/init.sh {{var_overrides_file}}
 
 # validate packer packer_main
