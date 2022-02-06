@@ -2,9 +2,6 @@ export PACKER_DIRECTORY := env_var("PACKER_DIRECTORY")
 export DISTRIBUTION := env_var("DISTRIBUTION")
 export BUILD_DIRECTORY := if env_var_or_default("BUILD_DIRECTORY", "") == "" { "output" } else { env_var("BUILD_DIRECTORY") + "/" + PACKER_DIRECTORY }
 export IMAGE_URI := env_var("IMAGE_URI")
-export ENABLE_PKI_INSTALL := env_var("ENABLE_PKI_INSTALL")
-export VAULT_ADDR := env_var("VAULT_ADDR")
-export VAULT_PKI_SECRETS_PATH := env_var("VAULT_PKI_SECRETS_PATH")
 
 
 packer_main := PACKER_DIRECTORY + "/main.json"
