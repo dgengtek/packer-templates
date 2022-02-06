@@ -62,7 +62,6 @@
     {
       "type": "shell",
       "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
-      "pause_before": "15s",
       "environment_vars": [
         "SALT_VERSION_TAG={{user `SALT_VERSION_TAG`}}",
         "SALT_GIT_URL={{user `SALT_GIT_URL`}}",
