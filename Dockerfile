@@ -16,7 +16,7 @@ COPY --from=0 /packer /bin/packer
 COPY --from=0 /just /bin/just
 COPY --from=0 /fd /bin/fd
 RUN apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y qemu-system-x86 qemu-utils fzf git ansible \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y qemu-system-x86 qemu-utils fzf git ansible jq \
   && mkdir /output /wd
 
 WORKDIR /wd
