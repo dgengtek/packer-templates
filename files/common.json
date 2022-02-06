@@ -1,4 +1,5 @@
 {
+  "distribution": "{{env `DISTRIBUTION`}}",
   "build_directory": "{{env `BUILD_DIRECTORY`}}",
   "build_timestamp": "{{isotime \"20060102150405\"}}",
   "cpus": "2",
