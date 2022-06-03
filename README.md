@@ -32,7 +32,7 @@ packer(the kernel, initrd and squashfs) over http and setting the kernel paramet
 
 Export the distribution to build 
 
-    $ export DISTRIBUTION="debian-11.2-amd64"
+    $ export DISTRIBUTION="debian-11.3-amd64"
 
 
 Build the debian base image.
@@ -64,8 +64,8 @@ Build salt image based on the cloud image
 
 Build the debian base image without docker and entrypoints main.sh, justfile.
 
-    $ export DISTRIBUTION="debian-11.2-amd64" PACKER_DIRECTORY="base/debian" IMAGE_URI="" BUILD_DIRECTORY="./output"
-    $ packer build -except=upload -only=qemu -var-file=./files/common.json -var-file=./base/debian/vars/debian-11.2-amd64.json -var-file=./base/debian/vars/common.json  ./base/debian/main.json
+    $ export DISTRIBUTION="debian-11.3-amd64" PACKER_DIRECTORY="base/debian" IMAGE_URI="" BUILD_DIRECTORY="./output"
+    $ packer build -except=upload -only=qemu -var-file=./files/common.json -var-file=./base/debian/vars/debian-11.3-amd64.json -var-file=./base/debian/vars/common.json  ./base/debian/main.json
 
 
 ### Building archlinux images
