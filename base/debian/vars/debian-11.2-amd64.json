@@ -1,7 +1,7 @@
 {
   "iso_checksum": "45c9feabba213bdc6d72e7469de71ea5aeff73faea6bfb109ab5bad37c3b43bd",
   "iso_name": "debian-11.2.0-amd64-netinst.iso",
-  "mirror_directory": "current/amd64/iso-cd",
+  "mirror_directory": "archive/11.2.0/amd64/iso-cd",
   "disk_size": "4G",
   "name": "debian-11.2-amd64",
   "lxd_name": "debian/11.2/amd64"

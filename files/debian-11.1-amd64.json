@@ -1,5 +1,0 @@
-{
-  "os": "debian",
-  "name": "debian-11.1-amd64",
-  "lxd_name": "debian/11.1/amd64"
-}

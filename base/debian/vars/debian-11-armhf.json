@@ -1,7 +1,0 @@
-{
-  "iso_checksum": "05b46bf60f6df60c47402924720f3bbd81e6a32b315898a6d1d596f90e13d760",
-  "iso_name": "debian-11.0.0-armhf-netinst.iso",
-  "mirror_directory": "current/armhf/iso-cd",
-  "name": "debian-11.0-armhf",
-  "lxd_name": "debian/11/armhf"
-}
