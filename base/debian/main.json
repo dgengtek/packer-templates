@@ -21,7 +21,7 @@
       ],
       "type": "qemu",
       "boot_wait": "1s",
-      "vm_name": "{{user `name`}}.qcow2",
+      "vm_name": "{{user `distribution`}}.qcow2",
       "format": "qcow2",
       "accelerator": "kvm",
       "headless": "{{user `headless`}}",
@@ -42,7 +42,7 @@
       "iso_url": "{{user `mirror`}}/{{user `mirror_directory`}}/{{user `iso_name`}}",
       "iso_checksum": "{{user `iso_checksum`}}",
       "shutdown_command": "sudo systemctl poweroff",
-      "output_directory": "{{user `build_directory`}}/{{user `name`}}-qemu"
+      "output_directory": "{{user `build_directory`}}/{{user `distribution`}}-qemu"
     },
     {
       "type": "lxd",
@@ -110,17 +110,17 @@
       "checksum_types": [
           "sha256"
       ],
-      "output": "{{user `build_directory`}}/{{user `name`}}-{{.BuilderType}}/{{user `name`}}.{{.ChecksumType}}"
+      "output": "{{user `build_directory`}}/{{user `distribution`}}-{{.BuilderType}}/{{user `distribution`}}.{{.ChecksumType}}"
     },
     {
       "type": "manifest",
       "output": "{{user `build_directory`}}/packer-manifest.json",
       "strip_path": false,
       "custom_data": {
-          "oscategory": "{{split (user `name`) \"-\" 0}}",
-          "osversion": "{{split (user `name`) \"-\" 1}}",
-          "architecture": "{{split (user `name`) \"-\" 2}}",
-          "template_slug": "{{user `name`}}"
+          "oscategory": "{{split (user `distribution`) \"-\" 0}}",
+          "osversion": "{{split (user `distribution`) \"-\" 1}}",
+          "architecture": "{{split (user `distribution`) \"-\" 2}}",
+          "template_slug": "{{user `distribution`}}"
       }
     },
     {
@@ -143,7 +143,7 @@
       "only": ["qemu"],
       "inline": [
         "set -eux",
-        "scripts/qemu/minio_upload.sh \"{{user `build_directory`}}\" \"{{user `minio_output_target`}}\" \"{{user `name`}}\""
+        "scripts/qemu/minio_upload.sh \"{{user `build_directory`}}\" \"{{user `minio_output_target`}}\" \"{{user `distribution`}}\""
       ]
     }
   ]

@@ -2,10 +2,10 @@
   "builders": [
     {
       "type": "qemu",
-      "iso_url": "{{ user `image_uri` }}/{{user `name`}}-qemu/{{user `name`}}.qcow2",
-      "iso_checksum": "file:{{ user `image_uri` }}/{{user `name`}}-qemu/{{user `name`}}.sha256",
+      "iso_url": "{{ user `image_uri` }}/{{user `distribution`}}-qemu/{{user `distribution`}}.qcow2",
+      "iso_checksum": "file:{{ user `image_uri` }}/{{user `distribution`}}-qemu/{{user `distribution`}}.sha256",
       "iso_target_extension": "qcow2",
-      "output_directory": "{{user `build_directory`}}/{{user `name`}}-qemu",
+      "output_directory": "{{user `build_directory`}}/{{user `distribution`}}-qemu",
       "shutdown_command": "sudo systemctl poweroff",
       "cpus": "{{user `cpus`}}",
       "boot_wait": "10s",
@@ -14,7 +14,7 @@
       "disk_image": true,
       "format": "qcow2",
       "accelerator": "kvm",
-      "vm_name": "{{user `name`}}.qcow2",
+      "vm_name": "{{user `distribution`}}.qcow2",
       "net_device": "virtio-net",
       "disk_interface": "virtio",
       "disk_discard": "unmap",
@@ -80,17 +80,17 @@
       "checksum_types": [
           "sha256"
       ],
-      "output": "{{user `build_directory`}}/{{user `name`}}-{{.BuilderType}}/{{user `name`}}.{{.ChecksumType}}"
+      "output": "{{user `build_directory`}}/{{user `distribution`}}-{{.BuilderType}}/{{user `distribution`}}.{{.ChecksumType}}"
     },
     {
       "type": "manifest",
       "output": "{{user `build_directory`}}/packer-manifest.json",
       "strip_path": false,
       "custom_data": {
-          "oscategory": "{{split (user `name`) \"-\" 0}}",
-          "osversion": "{{split (user `name`) \"-\" 1}}",
-          "architecture": "{{split (user `name`) \"-\" 2}}",
-          "template_slug": "{{user `name`}}"
+          "oscategory": "{{split (user `distribution`) \"-\" 0}}",
+          "osversion": "{{split (user `distribution`) \"-\" 1}}",
+          "architecture": "{{split (user `distribution`) \"-\" 2}}",
+          "template_slug": "{{user `distribution`}}"
       }
     },
     {
@@ -98,7 +98,7 @@
       "name": "upload",
       "inline": [
         "set -eux",
-        "scripts/qemu/minio_upload.sh \"{{user `build_directory`}}\" \"{{user `minio_output_target`}}\" \"{{user `name`}}\""
+        "scripts/qemu/minio_upload.sh \"{{user `build_directory`}}\" \"{{user `minio_output_target`}}\" \"{{user `distribution`}}\""
       ]
     }
   ]
