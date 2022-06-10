@@ -60,6 +60,11 @@ Build salt image based on the cloud image
     $ PACKER_DIRECTORY=salt IMAGE_URI="/output" PARENT_IMAGE_TYPE=cloud bash main.sh packer
 
 
+Build salt image based on debian base image with a different upstream url and version for saltstack
+
+    $ PACKER_DIRECTORY=salt IMAGE_URI="/output" PARENT_IMAGE_TYPE=base/debian SALT_GIT_URL=https://upstream/saltstack/salt.git SALT_VERSION_TAG=v3004.1 bash main.sh packer
+
+
 #### Example without wrappers
 
 Build the debian base image without docker and entrypoints main.sh, justfile.
