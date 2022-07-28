@@ -34,9 +34,17 @@ environment variables required
   DISTRIBUTION  name of distribution and its variable file found in either the packer directory or ./files
   IMAGE_URI  location of the image
 
+docker  build docker image with dependencies required for build
+
 sh  run interactive bash shell in container
 
 packer  run packer in BUILD_DIRECTORY
+
+list  show content of output directory containing the built images
+
+cat  output a file from the given path to stdout as a tar archive
+
+rm  cleanup volume containing the built images
 
 OPTIONS:
   -h  help
