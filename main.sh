@@ -339,7 +339,7 @@ _packer() {
     --env IMAGE_URI="$IMAGE_URI" \
     --env PARENT_IMAGE_TYPE="${PARENT_IMAGE_TYPE:-cloud}" \
     --env SALT_GIT_URL="${SALT_GIT_URL:-https://github.com/saltstack/salt}" \
-    --env SALT_VERSION_TAG="${SALT_VERSION_TAG:-v3003.3}" \
+    --env SALT_VERSION_TAG="${SALT_VERSION_TAG:-v3004.2}" \
     --env ENABLE_PKI_INSTALL="${ENABLE_PKI_INSTALL:-false}" \
     --env VAULT_ADDR="${VAULT_ADDR:-https://vault:8200}" \
     --env VAULT_PKI_SECRETS_PATH="${VAULT_PKI_SECRETS_PATH:-pki}" \
