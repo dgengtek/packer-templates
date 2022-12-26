@@ -1,6 +1,5 @@
 {
   "disk_size": "4G",
-  "iso_checksum": "https://mirrors.kernel.org/archlinux/iso/{{isotime \"2006.01\"}}.01/sha1sums.txt",
   "minio_output_target": "data/images/packer/base",
   "lxd_name": "archlinux/amd64",
   "mirror": "https://mirrors.kernel.org",
