@@ -1,7 +1,4 @@
 {
-  "enable_pki_install": "{{env `ENABLE_PKI_INSTALL`}}",
-  "vault_addr": "{{env `VAULT_ADDR`}}",
-  "vault_pki_secrets_path": "{{env `VAULT_PKI_SECRETS_PATH`}}",
   "distribution": "{{env `DISTRIBUTION`}}",
   "disk_size": "10G",
   "minio_output_target": "data/images/packer/kitchen"
