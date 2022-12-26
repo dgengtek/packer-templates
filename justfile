@@ -1,4 +1,8 @@
 export PACKER_DIRECTORY := env_var("PACKER_DIRECTORY")
+export PACKER_CACHE_DIR := env_var_or_default("PACKER_CACHE_DIR", "./packer_cache")
+export http_proxy := env_var_or_default("http_proxy", "")
+export https_proxy := env_var_or_default("https_proxy", "")
+export no_proxy := env_var_or_default("no_proxy", "")
 export DISTRIBUTION := env_var("DISTRIBUTION")
 export BUILD_DIRECTORY := if env_var_or_default("BUILD_DIRECTORY", "") == "" { "output" } else { env_var("BUILD_DIRECTORY") + "/" + PACKER_DIRECTORY }
 export IMAGE_URI := env_var("IMAGE_URI")

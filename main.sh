@@ -21,6 +21,7 @@ declare -i enable_debug=0
 declare -i enable_system_log=0
 readonly __script_name="${BASH_SOURCE[0]##*/}"
 readonly DOCKER_IMAGE_NAME=$(basename $(dirname $(realpath -e "$0")))
+readonly PACKER_CACHE_DIR=${PACKER_CACHE_DIR:-/var/cache/packer}
 
 
 usage() {
@@ -298,6 +299,7 @@ _sh() {
   sudo docker run \
     --device=/dev/kvm \
     --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
+    --mount source="${DOCKER_IMAGE_NAME}_cache",target=${PACKER_CACHE_DIR} \
     --rm -it "$DOCKER_IMAGE_NAME" 
 }
 
@@ -323,6 +325,7 @@ _cat() {
 
 _cleanup() {
   sudo docker volume rm ${DOCKER_IMAGE_NAME}_images
+  sudo docker volume rm ${DOCKER_IMAGE_NAME}_cache
 }
 
 
@@ -343,9 +346,14 @@ _packer() {
     --env ENABLE_PKI_INSTALL="${ENABLE_PKI_INSTALL:-false}" \
     --env VAULT_ADDR="${VAULT_ADDR:-https://vault:8200}" \
     --env VAULT_PKI_SECRETS_PATH="${VAULT_PKI_SECRETS_PATH:-pki}" \
+    --env PACKER_CACHE_DIR="${PACKER_CACHE_DIR}" \
+    --env http_proxy="${http_proxy}" \
+    --env https_proxy="${https_proxy}" \
+    --env no_proxy="${no_proxy}" \
     --device=/dev/kvm \
     --mount type=bind,source=${PWD},target=/wd/,readonly \
     --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
+    --mount source="${DOCKER_IMAGE_NAME}_cache",target=${PACKER_CACHE_DIR} \
     --rm -i "$DOCKER_IMAGE_NAME" -s -- <<EOF
 set -x
 var_file="./\${PACKER_DIRECTORY}/vars/\${DISTRIBUTION}.json"
