@@ -32,6 +32,7 @@
       "disk_discard": "unmap",
       "disk_compression": true,
       "communicator": "ssh",
+      "net_device": "virtio-net",
       "vnc_bind_address": "0.0.0.0",
       "ssh_wait_timeout": "30m",
       "ssh_username": "provision",
