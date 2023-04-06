@@ -38,32 +38,46 @@ Export the distribution to build
 Build the debian base image.
 
     $ PACKER_DIRECTORY="base/debian" IMAGE_URI="" bash main.sh packer
+    # or
+    $ bash main.sh debian base
 
 
 Build cloud image based on the new base image
 
     $ PACKER_DIRECTORY="cloud" IMAGE_URI="/output/base/debian" bash main.sh packer
+    # or
+    $ bash main.sh debian cloud
 
 
 Build an image for kitchen based on the new base image
 
     $ PACKER_DIRECTORY="kitchen" IMAGE_URI="/output/base/debian" bash main.sh packer
+    # or
+    $ bash main.sh debian kitchen
 
 
 Build kubernetes image based on the new cloud image
 
     $ PACKER_DIRECTORY="kubernetes" IMAGE_URI="/output/cloud" bash main.sh packer
+    # or
+    $ bash main.sh debian kubernetes
 
 
 Build salt image based on the cloud image
 
     $ PACKER_DIRECTORY=salt IMAGE_URI="/output" PARENT_IMAGE_TYPE=cloud bash main.sh packer
+    # or
+    $ bash main.sh debian salt_cloud
 
 
 Build salt image based on debian base image with a different upstream url and version for saltstack
 
     $ PACKER_DIRECTORY=salt IMAGE_URI="/output" PARENT_IMAGE_TYPE=base/debian SALT_GIT_URL=https://upstream/saltstack/salt.git SALT_VERSION_TAG=v3004.1 bash main.sh packer
 
+
+Look at other aliased build commands
+
+    $ bash main.sh help
 
 #### Example without wrappers
 
@@ -83,6 +97,8 @@ Export the distribution to build
 Build the archlinux base image
 
     $ PACKER_DIRECTORY="base/arch" IMAGE_URI="" bash main.sh packer
+    # or
+    $ bash main.sh arch base
 
 
 Repeat the same steps as with debian by setting the required PACKER_DIRECTORY and IMAGE_URI environment variables
@@ -90,6 +106,8 @@ Repeat the same steps as with debian by setting the required PACKER_DIRECTORY an
 Build cloud image based on the new base image
 
     $ PACKER_DIRECTORY=cloud IMAGE_URI="/output/base/arch" bash main.sh packer
+    # or
+    $ bash main.sh arch cloud
 
 
 ## Get built images

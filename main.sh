@@ -29,23 +29,17 @@ usage() {
 Usage: ${0##*/} [OPTIONS] <command> [<arguments>] [-- [EXTRA]]
 Usage: ${0##*/} [OPTIONS] sh
 Usage: ${0##*/} [OPTIONS] packer <packer arguments>
+Usage: ${0##*/} [OPTIONS] arch <build type>
+Usage: ${0##*/} [OPTIONS] debian <build type>
 
 environment variables required
   PACKER_DIRECTORY  directory for created images
   DISTRIBUTION  name of distribution and its variable file found in either the packer directory or ./files
   IMAGE_URI  location of the image
 
-docker  build docker image with dependencies required for build
+$(sed -n 's/^_\([^_)(]*\)() {[ ]*#\(.*\)/\1  \2/p' $__script_name | sort -k1 | column -t -N '<command>' -l 2)
 
-sh  run interactive bash shell in container
-
-packer  run packer in BUILD_DIRECTORY
-
-list  show content of output directory containing the built images
-
-cat  output a file from the given path to stdout as a tar archive
-
-rm  cleanup volume containing the built images
+$(sed -n 's/^__build_\([^)(]*\)() {[ ]*#\(.*\)/\1  \2/p' $__script_name | sort -k1 | column -t -N '<build type>' -l 2)
 
 OPTIONS:
   -h  help
@@ -289,7 +283,7 @@ done
 ################################################################################
 # custom functions
 #-------------------------------------------------------------------------------
-_docker() {
+_docker() {  # build docker image with dependencies required for build
   cd "$(dirname "${BASH_SOURCE[0]}")"
   local -a args
   [[ -n $DOCKERFILE_FROM_IMAGE ]] && args+=(--build-arg "dockerfile_from_image=$DOCKERFILE_FROM_IMAGE")
@@ -299,7 +293,7 @@ _docker() {
 }
 
 
-_sh() {
+_sh() {  # run interactive bash shell in container
   sudo docker run \
     --device=/dev/kvm \
     --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
@@ -308,7 +302,7 @@ _sh() {
 }
 
 
-_list() {
+_list() {  # show content of output directory containing the built images
   sudo docker run \
     --device=/dev/kvm \
     --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
@@ -316,7 +310,7 @@ _list() {
 }
 
 
-_cat() {
+_cat() {  # output a file from the given path to stdout as a tar archive
   local filename=${1:?Filename required}
 
   local cid=$(sudo docker run -d \
@@ -327,18 +321,18 @@ _cat() {
 }
 
 
-_cleanup() {
+_cleanup() {  # remove volumes containing the built images
   sudo docker volume rm ${DOCKER_IMAGE_NAME}_images
   sudo docker volume rm ${DOCKER_IMAGE_NAME}_cache
 }
 
 
-_rm() {
+_rm() {  # alias to cleanup
   _cleanup
 }
 
 
-_packer() {
+_packer() {  # run packer in BUILD_DIRECTORY
   mkdir -p output
   sudo docker run \
     --env PACKER_DIRECTORY="$PACKER_DIRECTORY" \
@@ -366,6 +360,101 @@ test -f "\$var_file" || exit 1
 just --set var_file "\$var_file" docker "$@"
 EOF
 }
+
+
+_debian() {  # <build type>    build debian images
+  set -x
+  export DISTRIBUTION="debian-11.6-amd64"
+  if [[ -z "${1-}" ]]; then
+    echo "ERROR: <build type> subcommand required" >&2
+    usage
+    exit 1
+  fi
+  __build_${1}
+  shift
+  set +x
+  _packer "$@"
+}
+
+
+_arch() {  # <build type>    build archlinux images
+  set -x
+  export DISTRIBUTION="archlinux-x86_64"
+  if [[ -z "${1-}" ]]; then
+    echo "ERROR: <build type> subcommand required" >&2
+    usage
+    exit 1
+  fi
+  __build_${1}
+  shift
+  set +x
+  _packer "$@"
+}
+
+__env_DISTRIBUTION_PACKER_DIRECTORY() {
+  if [[ $DISTRIBUTION =~ ^debian ]]; then
+    export PACKER_DIRECTORY="base/debian"
+  elif [[ $DISTRIBUTION =~ ^arch ]]; then
+    export PACKER_DIRECTORY="base/arch"
+  fi
+}
+
+__env_DISTRIBUTION_IMAGE_URI() {
+  if [[ $DISTRIBUTION =~ ^debian ]]; then
+    export IMAGE_URI="/output/base/debian"
+  elif [[ $DISTRIBUTION =~ ^arch ]]; then
+    export IMAGE_URI="/output/base/arch"
+  fi
+}
+
+
+__env_DISTRIBUTION_PARENT_IMAGE_TYPE() {
+  if [[ $DISTRIBUTION =~ ^debian ]]; then
+    export PARENT_IMAGE_TYPE=base/debian
+  elif [[ $DISTRIBUTION =~ ^arch ]]; then
+    export PARENT_IMAGE_TYPE=base/arch
+  fi
+}
+
+
+__build_base() {  # build base image
+  export IMAGE_URI=""
+  __env_DISTRIBUTION_PACKER_DIRECTORY
+}
+
+
+__build_cloud() {  # build cloud-init image based on base image
+  export PACKER_DIRECTORY="cloud"
+  __env_DISTRIBUTION_IMAGE_URI
+}
+
+
+__build_kitchen() {  # build kitchen image based on base image
+  export PACKER_DIRECTORY="kitchen"
+  __env_DISTRIBUTION_IMAGE_URI
+}
+
+
+__build_kubernetes() {  # build saltstack image based on the base image
+  export PACKER_DIRECTORY="kubernetes" IMAGE_URI="/output/cloud"
+}
+
+
+__build_salt() {  # build saltstack image based on the base image
+  export PACKER_DIRECTORY="salt" IMAGE_URI="/output"
+  __env_DISTRIBUTION_PARENT_IMAGE_TYPE
+}
+
+
+__build_salt_cloud() {  # build saltstack image based on the cloud-init image
+  export PACKER_DIRECTORY="salt" IMAGE_URI="/output" PARENT_IMAGE_TYPE=cloud
+}
+
+
+__build_salt_kitchen() {  # build saltstack image based on the kitchen image
+  export PACKER_DIRECTORY="salt" IMAGE_URI="/output" PARENT_IMAGE_TYPE=kitchen
+}
+
 
 #-------------------------------------------------------------------------------
 # end custom functions
