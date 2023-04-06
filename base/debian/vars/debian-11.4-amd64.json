@@ -1,7 +1,7 @@
 {
   "iso_checksum": "d490a35d36030592839f24e468a5b818c919943967012037d6ab3d65d030ef7f",
   "iso_name": "debian-11.4.0-amd64-netinst.iso",
-  "mirror_directory": "release/current/amd64/iso-cd",
+  "mirror_directory": "archive/11.4.0/amd64/iso-cd",
   "disk_size": "4G",
   "name": "debian-11.4-amd64"
 }

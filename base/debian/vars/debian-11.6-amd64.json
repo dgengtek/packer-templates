@@ -1,0 +1,7 @@
+{
+  "iso_checksum": "e482910626b30f9a7de9b0cc142c3d4a079fbfa96110083be1d0b473671ce08d",
+  "iso_name": "debian-11.6.0-amd64-netinst.iso",
+  "mirror_directory": "release/current/amd64/iso-cd",
+  "disk_size": "4G",
+  "name": "debian-11.6-amd64"
+}
