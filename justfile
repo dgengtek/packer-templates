@@ -38,10 +38,6 @@ only provider: setup
 	packer build -var-file={{common_var_file}} -only={{provider}} -var-file="{{var_file}}" -var-file={{extended_common}} -var-file={{var_overrides_file}} "{{packer_main}}"
 
 
-lxd profile: setup
-	packer build -only=lxd -var-file={{common_var_file}} -var-file="{{var_file}}" -var 'profile={{profile}}' -var-file={{extended_common}} -var-file={{var_overrides_file}} "{{packer_main}}"
-
-
 # build with docker, ignore upload
 docker *FLAGS: setup
 	packer build -except=upload -only=qemu -var-file={{common_var_file}} -var-file={{var_file}} -var-file={{extended_common}} -var-file={{var_overrides_file}} {{FLAGS}} {{packer_main}}

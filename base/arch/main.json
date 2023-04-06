@@ -29,16 +29,6 @@
         "ssh_password": "provision",
         "ssh_timeout": "30m",
         "headless": "{{ user `headless`}}"
-      },
-      {
-        "type": "lxd",
-        "image": "images:{{user `lxd_name`}}",
-        "profile": "{{user `profile`}}",
-        "container_name": "packer-{{replace_all \"/\" \"-\" (user `lxd_name`)}}",
-        "output_image": "{{user `lxd_name`}}/base",
-        "publish_properties": {
-          "description": "archlinux base image"
-        }
       }
     ],
   "provisioners": [
@@ -57,23 +47,6 @@
       "pause_before": "15s",
       "inline": [
         "echo 'wait for qemu reboot'"
-      ]
-    },
-    {
-      "type": "file",
-      "only": ["lxd"],
-      "source": "srv/99-dhcp-wildcard.network",
-      "destination": "/tmp/99-dhcp-wildcard.network"
-    },
-    {
-      "type": "shell",
-      "only": ["lxd"],
-      "inline": [
-        "systemctl unmask systemd-networkd-wait-online || :",
-        "systemctl start systemd-networkd-wait-online",
-        "pacman -Syu --noconfirm sudo",
-        "mv /tmp/99-dhcp-wildcard.network /etc/systemd/network/99-dhcp-wildcard.network",
-        "chmod +r /etc/systemd/network/99-dhcp-wildcard.network"
       ]
     },
     {
@@ -99,31 +72,6 @@
           "sha256"
       ],
       "output": "{{user `build_directory`}}/{{user `distribution`}}-{{.BuilderType}}/{{user `distribution`}}.{{.ChecksumType}}"
-    },
-    {
-      "type": "manifest",
-      "output": "{{user `build_directory`}}/packer-manifest.json",
-      "strip_path": false,
-      "custom_data": {
-          "oscategory": "{{split (user `distribution`) \"-\" 0}}",
-          "osversion": "{{split (user `distribution`) \"-\" 1}}",
-          "architecture": "{{split (user `distribution`) \"-\" 2}}",
-          "template_slug": "{{user `distribution`}}"
-      }
-    },
-    {
-      "type": "shell-local",
-      "only": ["lxd"],
-      "inline": [
-        "set -eux",
-        "artifact_id=`jq -r '[.builds[] | select(.name == \"lxd\")] | last.artifact_id' packer-manifest.json`",
-        "container_name=\"{{replace_all \"/\" \"_\" (user `lxd_name`)}}\"",
-        "minio_output_dir=\"{{user `minio_output_target`}}/${container_name}-lxd\"",
-        "mkdir -p \"output/${container_name}-lxd\"",
-        "cd \"output/${container_name}-lxd\"",
-        "lxc image export $artifact_id",
-        "bash ../../scripts/lxd/minio_upload.sh \"${artifact_id}.tar.gz\" \"$minio_output_dir\" \"$container_name\""
-      ]
     },
     {
       "type": "shell-local",

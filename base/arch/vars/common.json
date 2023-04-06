@@ -1,7 +1,6 @@
 {
   "disk_size": "4G",
   "minio_output_target": "data/images/packer/base",
-  "lxd_name": "archlinux/amd64",
   "mirror": "https://mirrors.kernel.org",
   "mirror_directory": "archlinux/iso/{{isotime \"2006.01\"}}.01",
   "name": "archlinux-{{isotime \"2006.01\"}}.01-x86_64"

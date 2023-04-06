@@ -1,5 +1,4 @@
 {
   "os": "archlinux",
-  "name": "archlinux-{{isotime \"2006.01\"}}.01-x86_64",
-  "lxd_name": "archlinux/amd64"
+  "name": "archlinux-{{isotime \"2006.01\"}}.01-x86_64"
 }

@@ -43,17 +43,6 @@
       "iso_checksum": "{{user `iso_checksum`}}",
       "shutdown_command": "sudo systemctl poweroff",
       "output_directory": "{{user `build_directory`}}/{{user `distribution`}}-qemu"
-    },
-    {
-      "type": "lxd",
-      "image": "images:{{user `lxd_name`}}",
-      "profile": "{{user `profile`}}",
-      "command_wrapper": "{{user `command_wrapper`}}",
-      "container_name": "packer-{{replace_all \"/\" \"-\" (user `lxd_name`)}}",
-      "output_image": "{{user `lxd_name`}}/base",
-      "publish_properties": {
-        "description": "debian 11 base image"
-      }
     }
   ],
   "provisioners": [
@@ -63,15 +52,6 @@
       "pause_before": "15s",
       "inline": [
         "echo 'wait for qemu reboot'"
-      ]
-    },
-    {
-      "type": "shell",
-      "only": ["lxd"],
-      "inline": [
-        "dhclient",
-        "apt-get update",
-        "apt-get install -y sudo"
       ]
     },
     {
@@ -122,20 +102,6 @@
           "architecture": "{{split (user `distribution`) \"-\" 2}}",
           "template_slug": "{{user `distribution`}}"
       }
-    },
-    {
-      "type": "shell-local",
-      "only": ["lxd"],
-      "inline": [
-        "set -eux",
-        "artifact_id=`jq -r '[.builds[] | select(.name == \"lxd\")] | last.artifact_id' packer-manifest.json`",
-        "container_name=\"{{replace_all \"/\" \"_\" (user `lxd_name`)}}\"",
-        "minio_output_dir=\"{{user `minio_output_target`}}/${container_name}-lxd\"",
-        "mkdir -p \"output/${container_name}-lxd\"",
-        "cd \"output/${container_name}-lxd\"",
-        "lxc image export $artifact_id",
-        "bash ../../scripts/lxd/minio_upload.sh \"${artifact_id}.tar.gz\" \"$minio_output_dir\" \"$container_name\""
-      ]
     },
     {
       "type": "shell-local",

@@ -3,6 +3,5 @@
   "iso_name": "debian-11.3.0-amd64-netinst.iso",
   "mirror_directory": "archive/11.3.0/amd64/iso-cd",
   "disk_size": "4G",
-  "name": "debian-11.3-amd64",
-  "lxd_name": "debian/11.3/amd64"
+  "name": "debian-11.3-amd64"
 }

@@ -24,17 +24,6 @@
       "ssh_password": "provision",
       "ssh_timeout": "30m",
       "headless": "{{ user `headless`}}"
-    },
-    {
-      "type": "lxd",
-      "image": "{{user `lxd_name`}}/base",
-      "profile": "{{user `profile`}}",
-      "command_wrapper": "{{user `command_wrapper`}}",
-      "container_name": "packer-kitchen-{{replace_all \"/\" \"-\" (user `lxd_name`)}}",
-      "output_image": "{{user `lxd_name`}}/kitchen",
-      "publish_properties": {
-        "description": "{{ user `lxd_name` }} kitchen image"
-      }
     }
   ],
   "provisioners": [
@@ -95,20 +84,6 @@
           "architecture": "{{split (user `distribution`) \"-\" 2}}",
           "template_slug": "{{user `distribution`}}"
       }
-    },
-    {
-      "type": "shell-local",
-      "only": ["lxd"],
-      "inline": [
-        "set -eux",
-        "artifact_id=`jq -r '[.builds[] | select(.name == \"lxd\")] | last.artifact_id' packer-manifest.json`",
-        "container_name=\"{{replace_all \"/\" \"_\" (user `lxd_name`)}}\"",
-        "minio_output_dir=\"{{user `minio_output_target`}}/${container_name}-lxd\"",
-        "mkdir -p \"output/${container_name}-lxd\"",
-        "cd \"output/${container_name}-lxd\"",
-        "lxc image export $artifact_id",
-        "bash ../../scripts/lxd/minio_upload.sh \"${artifact_id}.tar.gz\" \"$minio_output_dir\" \"$container_name\""
-      ]
     },
     {
       "type": "shell-local",
