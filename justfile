@@ -6,6 +6,7 @@ export no_proxy := env_var_or_default("no_proxy", "")
 export DISTRIBUTION := env_var("DISTRIBUTION")
 export BUILD_DIRECTORY := if env_var_or_default("BUILD_DIRECTORY", "") == "" { "output" } else { env_var("BUILD_DIRECTORY") + "/" + PACKER_DIRECTORY }
 export IMAGE_URI := env_var("IMAGE_URI")
+export ENABLE_PKI_INSTALL := env_var_or_default("ENABLE_PKI_INSTALL", "false")
 
 
 packer_main := PACKER_DIRECTORY + "/main.json"
