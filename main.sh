@@ -290,8 +290,12 @@ done
 # custom functions
 #-------------------------------------------------------------------------------
 _docker() {
-  cd "$(dirname ${BASH_SOURCE[0]})"
-  sudo docker build -t "$DOCKER_IMAGE_NAME" .
+  cd "$(dirname "${BASH_SOURCE[0]}")"
+  local -a args
+  [[ -n $DOCKERFILE_FROM_IMAGE ]] && args+=(--build-arg "dockerfile_from_image=$DOCKERFILE_FROM_IMAGE")
+  sudo docker build \
+    "${args[@]}" \
+    -t "$DOCKER_IMAGE_NAME" .
 }
 
 

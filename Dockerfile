@@ -1,3 +1,4 @@
+ARG dockerfile_from_image=debian:bullseye-slim
 FROM busybox
 
 RUN wget -O packer.zip 'https://releases.hashicorp.com/packer/1.7.8/packer_1.7.8_linux_amd64.zip' \
@@ -8,7 +9,7 @@ RUN wget -O packer.zip 'https://releases.hashicorp.com/packer/1.7.8/packer_1.7.8
   && tar --strip-components=1 -xzf fd.tar.gz
 
 
-FROM debian:11.1-slim
+FROM ${dockerfile_from_image} as build
 
 ENV BUILD_DIRECTORY=/output
 
