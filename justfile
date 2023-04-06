@@ -25,19 +25,19 @@ setup:
 
 # validate packer packer_main
 check:  setup
-	packer validate -var-file={{common_var_file}} -var-file="{{var_file}}" -var-file={{extended_common}} -var-file={{var_overrides_file}} "{{packer_main}}"
+	packer validate -var-file={{common_var_file}} -var-file={{extended_common}} -var-file="{{var_file}}" -var-file={{var_overrides_file}} "{{packer_main}}"
 
 
 # build all from packer_main
 build: setup
-	packer build -var-file={{common_var_file}} -var-file="{{var_file}}" -var-file={{extended_common}} -var-file={{var_overrides_file}} "{{packer_main}}"
+	packer build -var-file={{common_var_file}} -var-file={{extended_common}} -var-file="{{var_file}}" -var-file={{var_overrides_file}} "{{packer_main}}"
 
 
 # build only from variable {{provider}}
 only provider: setup
-	packer build -var-file={{common_var_file}} -only={{provider}} -var-file="{{var_file}}" -var-file={{extended_common}} -var-file={{var_overrides_file}} "{{packer_main}}"
+	packer build -only={{provider}} -var-file={{common_var_file}} -var-file={{extended_common}} -var-file="{{var_file}}" -var-file={{var_overrides_file}} "{{packer_main}}"
 
 
 # build with docker, ignore upload
 docker *FLAGS: setup
-	packer build -except=upload -only=qemu -var-file={{common_var_file}} -var-file={{var_file}} -var-file={{extended_common}} -var-file={{var_overrides_file}} {{FLAGS}} {{packer_main}}
+	packer build -except=upload -only=qemu -var-file={{common_var_file}} -var-file={{extended_common}} -var-file={{var_file}} -var-file={{var_overrides_file}} {{FLAGS}} {{packer_main}}
