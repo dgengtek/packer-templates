@@ -25,7 +25,7 @@ The images can be pulled from the [named docker volume](#get-built-images)
 The [terminal](./terminal/main.json) image is only supported for debian and
 allows live booting over pxe. This requires serving exported files by
 packer(the kernel, initrd and squashfs) over http and setting the kernel parameters 
-`boot=live fetch=http://<url>/terminal/debian-11.0-amd64-qemu/debian-11.0-amd64.squashfs`
+`boot=live fetch=<http url to squashfs>`
 
 
 ### Building debian images
@@ -77,7 +77,7 @@ Build the debian base image without docker and entrypoints main.sh, justfile.
 
 Export the distribution to build 
 
-    $ export DISTRIBUTION=archlinux
+    $ export DISTRIBUTION=archlinux-x86_64
 
 
 Build the archlinux base image
