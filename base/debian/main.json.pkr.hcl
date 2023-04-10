@@ -79,7 +79,7 @@ build {
 
 locals {
   v = {
-    output_directory = "${var.build_directory}/${var.distribution}"
+    output_directory = "${var.build_directory}/${local.os_name}"
   }
 }
 
