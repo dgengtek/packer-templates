@@ -43,8 +43,8 @@ build {
 locals {
   v = {
     output_directory = "${var.build_directory}/cloud/"
-    iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${var.distribution}/${var.distribution}.qcow2"
-    iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${var.distribution}/${var.distribution}.sha256"
+    iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${local.os_name}/${var.distribution}.qcow2"
+    iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${local.os_name}/${var.distribution}.sha256"
   }
 }
 
