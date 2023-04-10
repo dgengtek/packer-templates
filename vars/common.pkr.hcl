@@ -63,27 +63,6 @@ variable "no_proxy" {
   default = ""
 }
 
-/* variable "mirror" { */
-/*   type    = string */
-/*   default = "http://cdimage.debian.org/cdimage" */
-/* } */
-
-/* variable "account" { */
-/*   #default     = "" #null */
-/*   default     = null */
-/*   type        = string */
-/*   description = "AWS account and corresponding environment into which this will be deployed" */
-/*   validation { */
-/*      */
-/*     #condition     = (var.account == null ? true : false) || (var.account == null ? true : contains(["devops", "dev", "staging", "prod"] , var.account)) */
-/*     condition     = (var.account == null ? true : contains(["devops", "dev", "staging", "prod"] , var.account)) */
-/*     error_message = "Account can only be one of: devops, dev, staging, or prod." */
-/*   } */
-/* } */
-
-
 locals {
   os_name = split("-", var.distribution)[0]
-  iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${var.distribution}/${var.distribution}.qcow2"
-  iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${var.distribution}/${var.distribution}.sha256"
 }
