@@ -82,3 +82,9 @@ locals {
     output_directory = "${var.build_directory}/${var.distribution}"
   }
 }
+
+
+variable "disk_size" {
+  type = string
+  default = "4G"
+}

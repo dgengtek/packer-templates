@@ -1,8 +1,3 @@
-variable "disk_size" {
-  type = string
-  default = "4G"
-}
-
 variable "iso_url" {
   type = string
   default = ""
@@ -89,5 +84,6 @@ variable "no_proxy" {
 
 locals {
   os_name = split("-", var.distribution)[0]
+  iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${var.distribution}/${var.distribution}.qcow2"
+  iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${var.distribution}/${var.distribution}.sha256"
 }
-
