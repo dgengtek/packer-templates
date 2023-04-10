@@ -1,5 +1,3 @@
 {
-  "distribution": "{{env `DISTRIBUTION`}}",
-  "disk_size": "10G",
-  "minio_output_target": "data/images/packer/kitchen"
+  "//": ""
 }
