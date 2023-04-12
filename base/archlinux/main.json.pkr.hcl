@@ -23,7 +23,7 @@ build {
 
   post-processor "checksum" {
     checksum_types = ["sha256"]
-    output         = "${local.v.output_directory}/${var.distribution}.sha256"
+    output         = "${local.output_directory}/${var.distribution}.sha256"
   }
 }
 
