@@ -1,1 +1,1 @@
-../../vars/common.pkr.hcl
+../../files/common.pkr.hcl
