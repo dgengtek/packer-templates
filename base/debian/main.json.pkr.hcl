@@ -31,8 +31,9 @@ build {
 
 locals {
   v = {
+    build_type = ""
     output_directory = "${var.build_directory}/${local.os_name}"
-    boot_command     = ["<esc><wait>", "install", " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian-11.preseed", " debian-installer=en_US", " auto", " locale=en_US", " kbd-chooser/method=de", " keyboard-configuration/xkb-keymap=de", " netcfg/get_hostname=packer-debian-11", " netcfg/get_domain=intranet", " fb=false", " debconf/frontend=noninteractive", " console-setup/ask_detect=false", " console-keymaps-at/keymap=de", "<enter>"]
+    boot_command     = ["<esc><wait>", "install", " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian/debian-11.preseed", " debian-installer=en_US", " auto", " locale=en_US", " kbd-chooser/method=de", " keyboard-configuration/xkb-keymap=de", " netcfg/get_hostname=packer-debian-11", " netcfg/get_domain=intranet", " fb=false", " debconf/frontend=noninteractive", " console-setup/ask_detect=false", " console-keymaps-at/keymap=de", "<enter>"]
     disk_image = false
   }
 }
