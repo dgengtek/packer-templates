@@ -1,6 +1,3 @@
 {
-  "minio_output_target": "data/images/packer",
-  "parent_image_type": "{{env `PARENT_IMAGE_TYPE`}}",
-  "SALT_VERSION_TAG": "{{env `SALT_VERSION_TAG`}}",
-  "SALT_GIT_URL": "{{env `SALT_GIT_URL`}}"
+  "//": ""
 }
