@@ -35,9 +35,10 @@ build {
 
 locals {
   v = {
-    build_type = "salt/${var.parent_image_type}"
-    iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${var.parent_image_type}/${var.distribution}.qcow2"
-    iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${var.parent_image_type}/${var.distribution}.sha256"
+    raise_error_undefined_parent_image = var.parent_image_type == "none" ? (var.iso_url == "" ? file("ERROR: a custom iso_url is required if parent_image_type is not set otherwise set a parent_image_type from the allowed default list: cloud, kitchen, debian") : null) : null
+    build_type = var.parent_image_type == "" ? "salt" : "salt/${var.parent_image_type}"
+    iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${var.parent_image_type}/${local.os_name}/${var.distribution}.qcow2"
+    iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${var.parent_image_type}/${local.os_name}/${var.distribution}.sha256"
   }
 }
 
@@ -62,9 +63,10 @@ variable "salt_git_url" {
 
 variable "parent_image_type" {
   type        = string
-  description = "which image this build is based upon from the default build_directory, use iso_url and iso_checksum otherwise"
+  default = "none"
+  description = "Specify which image this build is based upon from the default build_directory. Otherwise provide a custom iso_url and iso_checksum if not building from defaults"
   validation {
-    condition     = contains(["cloud", "kitchen", "debian"] , var.parent_image_type)
+    condition     = contains(["cloud", "kitchen", "debian", "none"] , var.parent_image_type)
     error_message = "Variable parent_image_type can only be one of: cloud, kitchen, debian."
   }
 }
