@@ -30,6 +30,7 @@ build {
 
 locals {
   v = {
+    build_type = ""
     output_directory = "${var.build_directory}/${local.os_name}"
     boot_command = ["<enter><wait10><wait10><wait10><wait10>", "curl -O 'http://{{ .HTTPIP }}:{{ .HTTPPort }}/{enable_ssh.sh,99-dhcp-wildcard.network,archlinux/install_chroot.sh}'<enter><wait>", "bash ./enable_ssh.sh<enter><wait>", "systemctl start sshd<enter>"]
     disk_image = false
