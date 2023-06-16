@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# entrypoint
+# entrypoint wrapper for running packer inside docker
 # ------------------------------------------------------------------------------
 
 
@@ -29,24 +29,20 @@ usage() {
 Usage: ${0##*/} [OPTIONS] <command> [<arguments>] [-- [EXTRA]]
 Usage: ${0##*/} [OPTIONS] sh
 Usage: ${0##*/} [OPTIONS] packer <packer arguments>
-Usage: ${0##*/} [OPTIONS] arch <build type>
-Usage: ${0##*/} [OPTIONS] debian <build type>
-
-environment variables required
-  PACKER_DIRECTORY  directory for created images
-  DISTRIBUTION  name of distribution and its variable file found in either the packer directory or ./files
-  IMAGE_URI  location of the image
+Usage: ${0##*/} [OPTIONS] <arch|debian> <build type>
+Usage: ${0##*/} [OPTIONS] <arch|debian> salt <parent_image_type>
 
 $(sed -n 's/^_\([^_)(]*\)() {[ ]*#\(.*\)/\1  \2/p' $__script_name | sort -k1 | column -t -N '<command>' -l 2)
 
-$(sed -n 's/^__build_\([^)(]*\)() {[ ]*#\(.*\)/\1  \2/p' $__script_name | sort -k1 | column -t -N '<build type>' -l 2)
+$(sed -n 's/^__build_\([^)(_]*\)() {[ ]*#\(.*\)/\1  \2/p' $__script_name | sort -k1 | column -t -N '<build type>' -l 2)
+
+$(sed -n 's/^__build_salt_\([^)(_]*\)() {[ ]*#\(.*\)/\1  \2/p' $__script_name | sort -k1 | column -t -N '<parent_image_type>' -l 2)
 
 OPTIONS:
   -h  help
   -v  verbose
   -q  quiet
   -d  debug
-  -p,--path <directory>  some directory
 EOF
 }
 
@@ -58,7 +54,7 @@ main() {
   local -a args
 
   check_dependencies
-  # parse input args 
+  # parse input args
   parse_options "$@"
   # set leftover options parsed local input args
   set -- "${args[@]}"
@@ -70,7 +66,7 @@ main() {
   prepare_env
   pre_run
   run "$@"
-  post_run 
+  post_run
   unset_signal_handlers
 }
 
@@ -169,10 +165,6 @@ parse_options() {
         ;;
       --enable-log)
         enable_system_log=1
-        ;;
-      -p|--path)
-        path=$2
-        do_shift=2
         ;;
       --)
         do_shift=3
@@ -298,7 +290,7 @@ _sh() {  # run interactive bash shell in container
     --device=/dev/kvm \
     --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
     --mount source="${DOCKER_IMAGE_NAME}_cache",target=${PACKER_CACHE_DIR} \
-    --rm -it "$DOCKER_IMAGE_NAME" 
+    --rm -it "$DOCKER_IMAGE_NAME"
 }
 
 
@@ -333,126 +325,114 @@ _rm() {  # alias to cleanup
 
 
 _packer() {  # run packer in BUILD_DIRECTORY
-  mkdir -p output
+  __add_env_var PKR_VAR_distribution
+  __add_env_var PKR_VAR_output_directory
+  __add_env_var PKR_VAR_iso_url
+  __add_env_var PKR_VAR_iso_checksum
+  __add_env_var PKR_VAR_disk_size
+  __add_env_var PKR_VAR_http_proxy http_proxy
+  __add_env_var PKR_VAR_https_proxy https_proxy
+  __add_env_var PKR_VAR_no_proxy no_proxy
+  __add_env_var PACKER_CACHE_DIR
   sudo docker run \
-    --env PACKER_DIRECTORY="$PACKER_DIRECTORY" \
-    --env DISTRIBUTION="$DISTRIBUTION" \
-    --env IMAGE_URI="$IMAGE_URI" \
-    --env PARENT_IMAGE_TYPE="${PARENT_IMAGE_TYPE:-cloud}" \
-    --env SALT_GIT_URL="${SALT_GIT_URL:-https://github.com/saltstack/salt}" \
-    --env SALT_VERSION_TAG="${SALT_VERSION_TAG:-v3004.2}" \
-    --env ENABLE_PKI_INSTALL="${ENABLE_PKI_INSTALL:-false}" \
-    --env VAULT_ADDR="${VAULT_ADDR:-https://vault:8200}" \
-    --env VAULT_PKI_SECRETS_PATH="${VAULT_PKI_SECRETS_PATH:-pki}" \
-    --env PACKER_CACHE_DIR="${PACKER_CACHE_DIR}" \
-    --env http_proxy="${http_proxy}" \
-    --env https_proxy="${https_proxy}" \
-    --env no_proxy="${no_proxy}" \
+    --env PKR_VAR_build_directory="${PKR_VAR_build_directory:-/output}" \
+    --env PKR_VAR_enable_pki_install="${PKR_VAR_enable_pki_install:-false}" \
+    --env PKR_VAR_vault_addr="${VAULT_ADDR:-https://vault:8200}" \
+    --env PKR_VAR_vault_pki_secrets_path="${VAULT_PKI_SECRETS_PATH:-pki}" \
     --device=/dev/kvm \
     --mount type=bind,source=${PWD},target=/wd/,readonly \
     --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
     --mount source="${DOCKER_IMAGE_NAME}_cache",target=${PACKER_CACHE_DIR} \
+    "${args[@]}" \
     --rm -i "$DOCKER_IMAGE_NAME" -s -- <<EOF
 set -x
-var_file="./\${PACKER_DIRECTORY}/vars/\${DISTRIBUTION}.json"
-test -f "\$var_file" || var_file="./files/\${DISTRIBUTION}.json"
-test -f "\$var_file" || exit 1
-just --set var_file "\$var_file" docker "$@"
+packer $@
 EOF
+}
+
+__add_env_var() {
+  set +u
+  local -r name=${1:?Var name required}
+  local envname=${2:-""}
+  [[ -z $envname ]] && envname=$name
+  eval "[[ -n \$$envname ]]" && args+=(--env $name="$(eval echo \$$envname)")
+  set -u
 }
 
 
 _debian() {  # <build type>    build debian images
-  set -x
   export DISTRIBUTION="debian-11.6-amd64"
-  if [[ -z "${1-}" ]]; then
-    echo "ERROR: <build type> subcommand required" >&2
-    usage
-    exit 1
-  fi
-  __build_${1}
-  shift
-  set +x
-  _packer "$@"
+  __run_DISTRIBUTION "$@"
 }
 
 
 _arch() {  # <build type>    build archlinux images
-  set -x
   export DISTRIBUTION="archlinux-x86_64"
-  if [[ -z "${1-}" ]]; then
+  __run_DISTRIBUTION "$@"
+}
+
+
+__run_DISTRIBUTION() {
+  local -a args
+  export PKR_VAR_distribution=$DISTRIBUTION
+  local -r os_name=${DISTRIBUTION%%-*}
+  local -r build_type=$1
+  shift
+
+  if [[ -z "${build_type-}" ]]; then
     echo "ERROR: <build type> subcommand required" >&2
     usage
     exit 1
   fi
-  __build_${1}
-  shift
-  set +x
-  _packer "$@"
-}
-
-__env_DISTRIBUTION_PACKER_DIRECTORY() {
-  if [[ $DISTRIBUTION =~ ^debian ]]; then
-    export PACKER_DIRECTORY="base/debian"
-  elif [[ $DISTRIBUTION =~ ^arch ]]; then
-    export PACKER_DIRECTORY="base/arch"
-  fi
-}
-
-__env_DISTRIBUTION_IMAGE_URI() {
-  if [[ $DISTRIBUTION =~ ^debian ]]; then
-    export IMAGE_URI="/output/base/debian"
-  elif [[ $DISTRIBUTION =~ ^arch ]]; then
-    export IMAGE_URI="/output/base/arch"
-  fi
-}
-
-
-__env_DISTRIBUTION_PARENT_IMAGE_TYPE() {
-  if [[ $DISTRIBUTION =~ ^debian ]]; then
-    export PARENT_IMAGE_TYPE=base/debian
-  elif [[ $DISTRIBUTION =~ ^arch ]]; then
-    export PARENT_IMAGE_TYPE=base/arch
-  fi
+  __build_${build_type} "$@"
+  # _packer "$@"
 }
 
 
 __build_base() {  # build base image
-  export IMAGE_URI=""
-  __env_DISTRIBUTION_PACKER_DIRECTORY
+  _packer build -var-file base/$os_name/vars/common.json -var-file base/$os_name/vars/${DISTRIBUTION}.json base/$os_name/
 }
 
 
 __build_cloud() {  # build cloud-init image based on base image
-  export PACKER_DIRECTORY="cloud"
-  __env_DISTRIBUTION_IMAGE_URI
+  _packer build -var-file cloud/vars/common.json cloud
 }
 
 
 __build_kitchen() {  # build kitchen image based on base image
-  export PACKER_DIRECTORY="kitchen"
-  __env_DISTRIBUTION_IMAGE_URI
+  _packer build -var-file kitchen/vars/common.json kitchen
 }
 
 
 __build_kubernetes() {  # build saltstack image based on the base image
-  export PACKER_DIRECTORY="kubernetes" IMAGE_URI="/output/cloud"
+  _packer build -var-file kubernetes/vars/common.json kubernetes
 }
 
 
-__build_salt() {  # build saltstack image based on the base image
-  export PACKER_DIRECTORY="salt" IMAGE_URI="/output"
-  __env_DISTRIBUTION_PARENT_IMAGE_TYPE
+__build_salt() {  # <parent_image_type>  build saltstack image based on a parent image type
+  __env_salt
+  __build_salt_${1:?Salt type required, either base, cloud or kitchen}
+  _packer build -var-file salt/vars/common.json salt/
 }
 
+
+__build_salt_base() {  # build saltstack image based on the kitchen image
+  args+=(--env PKR_VAR_parent_image_type=none)
+}
 
 __build_salt_cloud() {  # build saltstack image based on the cloud-init image
-  export PACKER_DIRECTORY="salt" IMAGE_URI="/output" PARENT_IMAGE_TYPE=cloud
+  args+=(--env PKR_VAR_parent_image_type=cloud)
 }
 
 
 __build_salt_kitchen() {  # build saltstack image based on the kitchen image
-  export PACKER_DIRECTORY="salt" IMAGE_URI="/output" PARENT_IMAGE_TYPE=kitchen
+  args+=(--env PKR_VAR_parent_image_type=kitchen)
+}
+
+
+__() {
+  __add_env_var PKR_VAR_salt_version_tag
+  __add_env_var PKR_VAR_salt_git_url
 }
 
 
