@@ -70,11 +70,11 @@ variable "output_directory" {
   description = "override build directory to set an absolute path where an image will be outputted to"
 }
 
+
 locals {
   os_name = split("-", var.distribution)[0]
   output_directory = var.output_directory != "" ? var.output_directory : local.v.build_type != "" ? "${var.build_directory}/${local.v.build_type}/${local.os_name}" : "${var.build_directory}/${local.os_name}"
 }
-
 
 source "qemu" "main" {
   accelerator      = "kvm"
@@ -88,7 +88,6 @@ source "qemu" "main" {
   disk_size        = "${var.disk_size}"
   format           = "qcow2"
   headless         = "${var.headless}"
-  http_directory   = "srv"
   iso_url          = try(local.v.iso_url, var.iso_url)
   iso_checksum     = try(local.v.iso_checksum, var.iso_checksum)
   memory           = "${var.memory}"
@@ -99,4 +98,5 @@ source "qemu" "main" {
   ssh_password     = "provision"
   ssh_timeout      = "30m"
   vm_name          = "${var.distribution}.qcow2"
+  http_content     = try(local.v.http_content, {})
 }
