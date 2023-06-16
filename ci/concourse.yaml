@@ -1,0 +1,188 @@
+---
+resource_types:
+  - name: email
+    type: docker-image
+    source:
+      repository: pcfseceng/email-resource
+  - name: salt-pepper
+    type: registry-image
+    source:
+      repository: ((registry.registry))/concourse-resource-salt-pepper
+      username: ((registry.username))
+      password: ((registry.password))
+      tag: latest
+
+resources:
+  - name: r-salt
+    type: salt-pepper
+    source:
+      uri: ((vars.salt_api_uri))
+      username: ((r-salt.username))
+      password: ((r-salt.password))
+      eauth: ldap
+      timeout: 88000
+
+  - name: r-((git_repo_name))
+    type: git
+    check_every: "24h"
+    webhook_token: ((webhook_token))
+    source:
+      uri: ((git_uri))
+      branch: ((git_branch))
+      private_key: ((r-git-ssh.private_key))
+
+  - name: r-email
+    tags:
+      - ssd
+    type: email
+    check_every: "24h"
+    source:
+      smtp:
+        host: ((vars.smtp_host))
+        port: "((vars.smtp_port))" # this must be a string
+        username: ((r-email.username))
+        password: ((r-email.password))
+        host_origin: ((vars.smtp_helo))
+      from: ((vars.smtp_from))
+      to:
+        - ((vars.smtp_to))
+
+
+  - name: r-docker-image-from
+    type: registry-image
+    source:
+      repository: ((registry.registry))/debian
+      username: ((registry.username))
+      password: ((registry.password))
+      tag: bullseye-slim
+
+
+  - name: r-docker-image-build
+    type: registry-image
+    check_every: "24h"
+    source:
+      username: ((registry.username))
+      password: ((registry.password))
+      repository: ((registry.registry))/((git_repo_name))
+      tag: latest
+
+
+  - name: pipelines
+    type: git
+    source:
+      uri: ((vars.git_ssh_uri))/concourse/pipelines
+      branch: ((git_branch))
+      private_key: ((r-git-ssh.private_key))
+      git_config:
+        - name: core.bigFileThreshold
+          value: 5M
+      disable_ci_skip: true
+
+
+
+jobs:
+  - name: j-build-debian-base
+    serial: true
+    serial_groups:
+      - imagebuild
+    plan:
+      - in_parallel:
+          fail_fast: true
+          steps:
+            - get: r-((git_repo_name))
+              trigger: true
+            - get: r-docker-image-build
+              passed:
+                - j-build-image
+              trigger: true
+
+      - put: r-salt
+        params:
+          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
+          tgt_type: compound
+          fun: cmd.run
+          args:
+            - "bash main.sh debian base"
+          kwargs:
+            cwd: /data/tmp/packer-templates
+            env:
+              DISTRIBUTION: debian-11.6-amd64
+
+  - name: j-build-archlinux-base
+    serial: true
+    serial_groups:
+      - imagebuild
+    plan:
+      - in_parallel:
+          fail_fast: true
+          steps:
+            - get: r-((git_repo_name))
+              trigger: true
+            - get: r-docker-image-build
+              passed:
+                - j-build-image
+              trigger: true
+
+      - put: r-salt
+        params:
+          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
+          tgt_type: compound
+          fun: cmd.run
+          args:
+            - "bash main.sh archlinux base"
+          kwargs:
+            cwd: /data/tmp/packer-templates
+            env:
+              DISTRIBUTION: archlinux-x86_64
+
+
+  - name: j-build-image
+    serial: true
+    plan:
+      - in_parallel:
+          fail_fast: true
+          steps:
+            - get: r-((git_repo_name))
+              trigger: true
+              params:
+                depth: 1
+            - get: r-docker-image-from
+              trigger: false
+              params:
+                depth: 1
+              params:
+                format: oci
+            - get: pipelines
+              trigger: false
+              params:
+                depth: 1
+
+      - task: build-docker-image
+        privileged: true
+        file: "pipelines/task/build_docker_image.yaml"
+        input_mapping:
+          docker-from-image: r-docker-image-from
+          image-src: r-((git_repo_name))
+        output_mapping:
+          image: image-build
+        params:
+          IMAGE_ARG_dockerfile_from_image: docker-from-image/image.tar
+          CONTEXT: "."
+          BUILD_ARG_http_proxy: ((vars.http_proxy))
+          BUILD_ARG_no_proxy: ((vars.no_proxy))
+          BUILD_ARG_author: ((author))
+
+      - put: r-docker-image-build
+        tags:
+          - ssd
+        inputs:
+          - image-build
+        params:
+          image: image-build/image.tar
+        on_failure:
+          put: r-email
+          tags:
+            - ssd
+          params:
+            subject_text: "Build failed: ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}"
+            body_text: "Docker image build failed: ${ATC_EXTERNAL_URL}/teams/main/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}"
