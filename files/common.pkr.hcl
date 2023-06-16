@@ -17,11 +17,6 @@ variable "enable_pki_install" {
   default = false
 }
 
-variable "build_directory" {
-  type    = string
-  default = "output"
-}
-
 variable "vault_addr" {
   type    = string
   default = ""
@@ -63,9 +58,16 @@ variable "no_proxy" {
   default = ""
 }
 
+variable "build_directory" {
+  type    = string
+  default = "output"
+  description = "prefix path for where builds will be stored in for each build type"
+}
+
 variable "output_directory" {
   type    = string
   default = ""
+  description = "override build directory to set an absolute path where an image will be outputted to"
 }
 
 locals {
