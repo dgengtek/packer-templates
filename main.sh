@@ -360,21 +360,20 @@ __add_env_var() {
 
 
 _debian() {  # <build type>    build debian images
-  export DISTRIBUTION="debian-11.6-amd64"
+  [[ -z ${PKR_VAR_distribution:-""} ]] && PKR_VAR_distribution="debian-11.6-amd64"
   __run_DISTRIBUTION "$@"
 }
 
 
 _arch() {  # <build type>    build archlinux images
-  export DISTRIBUTION="archlinux-x86_64"
+  PKR_VAR_distribution="archlinux-x86_64"
   __run_DISTRIBUTION "$@"
 }
 
 
 __run_DISTRIBUTION() {
   local -a args
-  export PKR_VAR_distribution=$DISTRIBUTION
-  local -r os_name=${DISTRIBUTION%%-*}
+  local -r os_name=${PKR_VAR_distribution%%-*}
   local -r build_type=$1
   shift
 
@@ -389,7 +388,7 @@ __run_DISTRIBUTION() {
 
 
 __build_base() {  # build base image
-  _packer build -var-file base/$os_name/vars/common.json -var-file base/$os_name/vars/${DISTRIBUTION}.json base/$os_name/ "$@"
+  _packer build -var-file base/$os_name/vars/common.json -var-file base/$os_name/vars/${PKR_VAR_distribution}.json base/$os_name/ "$@"
 }
 
 
