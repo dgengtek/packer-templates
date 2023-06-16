@@ -1,5 +1,5 @@
 ARG dockerfile_from_image=debian:bullseye-slim
-FROM busybox
+FROM ${dockerfile_from_image} as tmp
 
 RUN wget -O packer.zip 'https://releases.hashicorp.com/packer/1.7.8/packer_1.7.8_linux_amd64.zip' \
   && wget -O just.tar.gz 'https://github.com/casey/just/releases/download/0.10.3/just-0.10.3-x86_64-unknown-linux-musl.tar.gz' \
