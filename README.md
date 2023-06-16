@@ -1,6 +1,6 @@
 # Packer images built with qemu
 
-This repository contains configurations for building arch and debian from installation media provided from the distributions. 
+This repository contains configurations for building arch and debian from installation media provided from the distributions.
 
 ## Requirements
 
@@ -24,79 +24,50 @@ The images can be pulled from the [named docker volume](#get-built-images)
 
 The [terminal](./terminal/main.json) image is only supported for debian and
 allows live booting over pxe. This requires serving exported files by
-packer(the kernel, initrd and squashfs) over http and setting the kernel parameters 
+packer(the kernel, initrd and squashfs) over http and setting the kernel parameters
 `boot=live fetch=<http url to squashfs>`
 
 
 ### Building debian images
 
-Export the distribution to build 
-
-    $ export DISTRIBUTION="debian-11.6-amd64"
-
-
 Build the debian base image.
 
-    $ PACKER_DIRECTORY="base/debian" IMAGE_URI="" bash main.sh packer
-    # or
+    $ PKR_VAR_distribution=debian-11.6-adm64 packer build -var-file base/debian/vars/common.json -var-file base/debian/vars/${PKR_VAR_distribution}.json base/debian/
+    #
+    # or build inside docker
     $ bash main.sh debian base
 
 
 Build cloud image based on the new base image
 
-    $ PACKER_DIRECTORY="cloud" IMAGE_URI="/output/base/debian" bash main.sh packer
-    # or
+    $ PKR_VAR_distribution=debian-11.6-adm64 packer build cloud
+    #
+    # or build inside docker
     $ bash main.sh debian cloud
 
 
 Build an image for kitchen based on the new base image
 
-    $ PACKER_DIRECTORY="kitchen" IMAGE_URI="/output/base/debian" bash main.sh packer
-    # or
+    $ PKR_VAR_distribution=debian-11.6-adm64 packer build kitchen
+    #
+    # or build inside docker
     $ bash main.sh debian kitchen
-
-
-Build kubernetes image based on the new cloud image
-
-    $ PACKER_DIRECTORY="kubernetes" IMAGE_URI="/output/cloud" bash main.sh packer
-    # or
-    $ bash main.sh debian kubernetes
 
 
 Build salt image based on the cloud image
 
-    $ PACKER_DIRECTORY=salt IMAGE_URI="/output" PARENT_IMAGE_TYPE=cloud bash main.sh packer
-    # or
-    $ bash main.sh debian salt_cloud
-
-
-Build salt image based on debian base image with a different upstream url and version for saltstack
-
-    $ PACKER_DIRECTORY=salt IMAGE_URI="/output" PARENT_IMAGE_TYPE=base/debian SALT_GIT_URL=https://upstream/saltstack/salt.git SALT_VERSION_TAG=v3004.1 bash main.sh packer
-
-
-Look at other aliased build commands
-
-    $ bash main.sh help
-
-#### Example without wrappers
-
-Build the debian base image without docker and entrypoints main.sh, justfile.
-
-    $ export DISTRIBUTION="debian-11.6-amd64" PACKER_DIRECTORY="base/debian" IMAGE_URI="" BUILD_DIRECTORY="./output"
-    $ packer build -except=upload -only=qemu -var-file=./files/common.json -var-file=./base/debian/vars/debian-11.6-amd64.json -var-file=./base/debian/vars/common.json  ./base/debian/main.json
+    $ PKR_VAR_distribution=debian-11.6-adm64 packer build -var parent_image_type=cloud salt
+    #
+    # or build inside docker
+    $ bash main.sh debian salt cloud
 
 
 ### Building archlinux images
 
-Export the distribution to build 
-
-    $ export DISTRIBUTION=archlinux-x86_64
-
 
 Build the archlinux base image
 
-    $ PACKER_DIRECTORY="base/arch" IMAGE_URI="" bash main.sh packer
+    $ PKR_VAR_distribution=archlinux-x86-64 packer build -var-file base/archlinux/vars/common.json -var-file base/archlinux/vars/${PKR_VAR_distribution}.json base/archlinux/
     # or
     $ bash main.sh arch base
 
@@ -105,7 +76,7 @@ Repeat the same steps as with debian by setting the required PACKER_DIRECTORY an
 
 Build cloud image based on the new base image
 
-    $ PACKER_DIRECTORY=cloud IMAGE_URI="/output/base/arch" bash main.sh packer
+    $ PKR_VAR_distribution=archlinux-x86-64 packer build cloud
     # or
     $ bash main.sh arch cloud
 
@@ -122,6 +93,10 @@ Pull image from volume
 
     $ bash main.sh cat '<absolute filename>' | tar -xf - -C <output path>
 
+
+## Further options
+
+See common variables in [common variables](./files/common.pkr.hcl) which can be set and given as arguments to either the `packer -var ... ` command or to  `bash main.sh <arch|debian> <build_type> -var ...`
 
 ## Notes
 
