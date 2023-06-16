@@ -49,7 +49,8 @@ done
 
 curl -s "$MIRRORLIST" |  sed 's/^#Server/Server/' > /etc/pacman.d/mirrorlist
 
-pacman -Sy --noconfirm archlinux-keyring
+pacman-key --init
+pacman-key --populate archlinux
 /usr/bin/pacstrap ${TARGET_DIR} base base-devel linux openssh grub gptfdisk rng-tools lvm2
 
 # remove quiet boot
