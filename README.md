@@ -16,10 +16,6 @@ Build the docker image for the required dependencies to build the images via pac
 
 
 ## Building images
-The iso provided from the `IMAGE_URI` environment variable must be in the directory structure as in
-`${IMAGE_URI}/${DISTRIBUTION}-qemu/${DISTRIBUTION}.qcow2` for all builds from this
-repository except for building base images which have mirrors set.
-
 The images can be pulled from the [named docker volume](#get-built-images)
 
 The [terminal](./terminal/main.json) image is only supported for debian and
@@ -72,7 +68,7 @@ Build the archlinux base image
     $ bash main.sh arch base
 
 
-Repeat the same steps as with debian by setting the required PACKER_DIRECTORY and IMAGE_URI environment variables
+Repeat the same steps as with debian
 
 Build cloud image based on the new base image
 
@@ -96,7 +92,7 @@ Pull image from volume
 
 ## Further options
 
-See common variables in [common variables](./files/common.pkr.hcl) which can be set and given as arguments to either the `packer -var ... ` command or to  `bash main.sh <arch|debian> <build_type> -var ...`
+See [common variables](./files/common.pkr.hcl) which can be set and given as arguments to either the `packer -var ... ` command or to  `bash main.sh <arch|debian> <build_type> -var ...`
 
 ## Notes
 
