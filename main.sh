@@ -417,7 +417,7 @@ __build_salt() {  # <parent_image_type>  build saltstack image based on a parent
 
 
 __build_salt_base() {  # build saltstack image based on the kitchen image
-  args+=(--env PKR_VAR_parent_image_type=none)
+  args+=(--env PKR_VAR_parent_image_type=$os_name)
 }
 
 __build_salt_cloud() {  # build saltstack image based on the cloud-init image
@@ -430,7 +430,7 @@ __build_salt_kitchen() {  # build saltstack image based on the kitchen image
 }
 
 
-__() {
+__env_salt() {
   __add_env_var PKR_VAR_salt_version_tag
   __add_env_var PKR_VAR_salt_git_url
 }
