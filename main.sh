@@ -26,11 +26,10 @@ readonly PACKER_CACHE_DIR=${PACKER_CACHE_DIR:-/var/cache/packer}
 
 usage() {
   cat >&2 << EOF
-Usage: ${0##*/} [OPTIONS] <command> [<arguments>] [-- [EXTRA]]
 Usage: ${0##*/} [OPTIONS] sh
-Usage: ${0##*/} [OPTIONS] packer <packer arguments>
-Usage: ${0##*/} [OPTIONS] <arch|debian> <build type>
-Usage: ${0##*/} [OPTIONS] <arch|debian> salt <parent_image_type>
+Usage: ${0##*/} [OPTIONS] packer [<packer arguments>]
+Usage: ${0##*/} [OPTIONS] <arch|debian> <build type> [<packer arguments>]
+Usage: ${0##*/} [OPTIONS] <arch|debian> salt <parent_image_type> [<packer arguments>]
 
 $(sed -n 's/^_\([^_)(]*\)() {[ ]*#\(.*\)/\1  \2/p' $__script_name | sort -k1 | column -t -N '<command>' -l 2)
 
@@ -390,29 +389,29 @@ __run_DISTRIBUTION() {
 
 
 __build_base() {  # build base image
-  _packer build -var-file base/$os_name/vars/common.json -var-file base/$os_name/vars/${DISTRIBUTION}.json base/$os_name/
+  _packer build -var-file base/$os_name/vars/common.json -var-file base/$os_name/vars/${DISTRIBUTION}.json base/$os_name/ "$@"
 }
 
 
 __build_cloud() {  # build cloud-init image based on base image
-  _packer build -var-file cloud/vars/common.json cloud
+  _packer build -var-file cloud/vars/common.json cloud "$@"
 }
 
 
 __build_kitchen() {  # build kitchen image based on base image
-  _packer build -var-file kitchen/vars/common.json kitchen
+  _packer build -var-file kitchen/vars/common.json kitchen "$@"
 }
 
 
-__build_kubernetes() {  # build saltstack image based on the base image
-  _packer build -var-file kubernetes/vars/common.json kubernetes
+__build_terminal() {  # build terminal image based on the base image
+  _packer build -var-file terminal/vars/common.json terminal "$@"
 }
 
 
 __build_salt() {  # <parent_image_type>  build saltstack image based on a parent image type
   __env_salt
   __build_salt_${1:?Salt type required, either base, cloud or kitchen}
-  _packer build -var-file salt/vars/common.json salt/
+  _packer build -var-file salt/vars/common.json salt/ "$@"
 }
 
 
