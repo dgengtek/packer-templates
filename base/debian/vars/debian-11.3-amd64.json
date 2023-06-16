@@ -1,7 +1,4 @@
 {
-  "iso_checksum": "7892981e1da216e79fb3a1536ce5ebab157afdd20048fe458f2ae34fbc26c19b",
-  "iso_name": "debian-11.3.0-amd64-netinst.iso",
-  "mirror_directory": "archive/11.3.0/amd64/iso-cd",
-  "disk_size": "4G",
-  "name": "debian-11.3-amd64"
+  "iso_url": "http://cdimage.debian.org/cdimage/archive/11.3.0/amd64/iso-cd/debian-11.3.0-amd64-netinst.iso",
+  "iso_checksum": "7892981e1da216e79fb3a1536ce5ebab157afdd20048fe458f2ae34fbc26c19b"
 }
