@@ -16,7 +16,7 @@ build {
   }
 
   provisioner "shell" {
-    environment_vars = ["ENABLE_PKI_INSTALL=${var.enable_pki_install}", "VAULT_ADDR=${var.vault_addr}", "VAULT_PKI_SECRETS_PATH=${var.vault_pki_secrets_path}"]
+    environment_vars = ["http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}, ENABLE_PKI_INSTALL=${var.enable_pki_install}", "VAULT_ADDR=${var.vault_addr}", "VAULT_PKI_SECRETS_PATH=${var.vault_pki_secrets_path}"]
     execute_command  = "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'"
     scripts          = ["scripts/install_systemd-networkd.sh", "scripts/network_wait.sh", "scripts/archlinux/install_requisites.sh", "scripts/archlinux/install_pki.sh", "srv/enable_ssh.sh", "scripts/archlinux/cleanup.sh", "scripts/cleanup_host.sh", "scripts/cleanup_logs.sh", "scripts/minimize.sh"]
   }
