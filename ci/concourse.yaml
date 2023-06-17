@@ -20,7 +20,7 @@ resources:
       username: ((r-salt.username))
       password: ((r-salt.password))
       eauth: ldap
-      timeout: 88000
+      timeout: 1800
 
   - name: r-((git_repo_name))
     type: git
@@ -30,6 +30,23 @@ resources:
       uri: ((git_uri))
       branch: ((git_branch))
       private_key: ((r-git-ssh.private_key))
+      ignore_paths:
+        - ci/*
+        - Dockerfile
+
+
+  - name: r-((git_repo_name))-dockerfile
+    type: git
+    check_every: "24h"
+    webhook_token: ((webhook_token))
+    source:
+      uri: ((git_uri))
+      branch: ((git_branch))
+      private_key: ((r-git-ssh.private_key))
+      ignore_paths:
+        - ci/*
+      paths:
+        - Dockerfile
 
   - name: r-email
     tags:
@@ -91,10 +108,12 @@ jobs:
           steps:
             - get: r-((git_repo_name))
               trigger: true
+              passed:
+                - j-prepare-environment
             - get: r-docker-image-build
+              trigger: true
               passed:
                 - j-build-image
-              trigger: true
 
       - put: r-salt
         params:
@@ -102,11 +121,21 @@ jobs:
           tgt_type: compound
           fun: cmd.run
           args:
-            - "bash main.sh debian base"
+            - "./main.sh debian base"
           kwargs:
+            raise_err: true
+            shell: /bin/bash
             cwd: /data/tmp/packer-templates
             env:
               DISTRIBUTION: debian-11.6-amd64
+              DOCKER_REGISTRY: ((registry.registry))
+              DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              http_proxy: ((vars.http_proxy))
+              https_proxy: ((vars.https_proxy))
+              no_proxy: ((vars.no_proxy))
+              PKR_VAR_http_proxy: ((vars.http_proxy))
+              PKR_VAR_https_proxy: ((vars.https_proxy))
+              PKR_VAR_no_proxy: ((vars.no_proxy))
 
   - name: j-build-archlinux-base
     serial: true
@@ -118,10 +147,12 @@ jobs:
           steps:
             - get: r-((git_repo_name))
               trigger: true
+              passed:
+                - j-prepare-environment
             - get: r-docker-image-build
+              trigger: true
               passed:
                 - j-build-image
-              trigger: true
 
       - put: r-salt
         params:
@@ -129,12 +160,38 @@ jobs:
           tgt_type: compound
           fun: cmd.run
           args:
-            - "bash main.sh archlinux base"
+            - "./main.sh arch base"
           kwargs:
+            raise_err: true
+            shell: /bin/bash
             cwd: /data/tmp/packer-templates
             env:
               DISTRIBUTION: archlinux-x86_64
+              DOCKER_REGISTRY: ((registry.registry))
+              DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              http_proxy: ((vars.http_proxy))
+              https_proxy: ((vars.https_proxy))
+              no_proxy: ((vars.no_proxy))
+              PKR_VAR_http_proxy: ((vars.http_proxy))
+              PKR_VAR_https_proxy: ((vars.https_proxy))
+              PKR_VAR_no_proxy: ((vars.no_proxy))
 
+  - name: j-prepare-environment
+    serial: true
+    plan:
+      - get: r-((git_repo_name))
+        trigger: true
+        params:
+          depth: 1
+      - put: r-salt
+        attempts: 3
+        params:
+          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
+          tgt_type: compound
+          fun: state.sls
+          args:
+            - "git,binary"
+            - "queue=True"
 
   - name: j-build-image
     serial: true
@@ -142,7 +199,7 @@ jobs:
       - in_parallel:
           fail_fast: true
           steps:
-            - get: r-((git_repo_name))
+            - get: r-((git_repo_name))-dockerfile
               trigger: true
               params:
                 depth: 1
@@ -158,11 +215,12 @@ jobs:
                 depth: 1
 
       - task: build-docker-image
+        attempts: 3
         privileged: true
         file: "pipelines/task/build_docker_image.yaml"
         input_mapping:
           docker-from-image: r-docker-image-from
-          image-src: r-((git_repo_name))
+          image-src: r-((git_repo_name))-dockerfile
         output_mapping:
           image: image-build
         params:
@@ -173,6 +231,7 @@ jobs:
           BUILD_ARG_author: ((author))
 
       - put: r-docker-image-build
+        attempts: 3
         tags:
           - ssd
         inputs:

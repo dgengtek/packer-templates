@@ -20,8 +20,14 @@ declare -i enable_quiet=0
 declare -i enable_debug=0
 declare -i enable_system_log=0
 readonly __script_name="${BASH_SOURCE[0]##*/}"
-readonly DOCKER_IMAGE_NAME=$(basename $(dirname $(realpath -e "$0")))
+readonly DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME:-$(basename $(dirname $(realpath -e "$0")))}
+readonly DOCKER_REGISTRY=${DOCKER_REGISTRY:-""}
 readonly PACKER_CACHE_DIR=${PACKER_CACHE_DIR:-/var/cache/packer}
+# for image url with registry
+declare image_name=$DOCKER_IMAGE_NAME
+# for volume names
+readonly sanitized_image_name=${DOCKER_IMAGE_NAME%:*}
+[[ -n ${DOCKER_REGISTRY:-""} ]] && image_name="${DOCKER_REGISTRY}/${image_name}"
 
 
 usage() {
@@ -47,6 +53,7 @@ EOF
 
 
 main() {
+
   # flags
 
   local -a options
@@ -104,16 +111,7 @@ prepare_env() {
 
 
 prepare() {
-  export PATH_USER_LIB=${PATH_USER_LIB:-"$HOME/.local/lib/"}
-
-  source_libs
   set_descriptors
-}
-
-
-source_libs() {
-  source "${PATH_USER_LIB}libutils.sh"
-  source "${PATH_USER_LIB}libcolors.sh"
 }
 
 
@@ -280,24 +278,24 @@ _docker() {  # build docker image with dependencies required for build
   [[ -n $DOCKERFILE_FROM_IMAGE ]] && args+=(--build-arg "dockerfile_from_image=$DOCKERFILE_FROM_IMAGE")
   sudo docker build \
     "${args[@]}" \
-    -t "$DOCKER_IMAGE_NAME" .
+    -t "$sanitized_image_name" .
 }
 
 
 _sh() {  # run interactive bash shell in container
   sudo docker run \
     --device=/dev/kvm \
-    --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
-    --mount source="${DOCKER_IMAGE_NAME}_cache",target=${PACKER_CACHE_DIR} \
-    --rm -it "$DOCKER_IMAGE_NAME"
+    --mount source="${sanitized_image_name}_images",target=/output \
+    --mount source="${sanitized_image_name}_cache",target=${PACKER_CACHE_DIR} \
+    --rm -it "$image_name"
 }
 
 
 _list() {  # show content of output directory containing the built images
   sudo docker run \
     --device=/dev/kvm \
-    --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
-    --rm -i "$DOCKER_IMAGE_NAME" -c "fd -a -t f . /output | xargs ls -l"
+    --mount source="${sanitized_image_name}_images",target=/output \
+    --rm -i "$image_name" -c "fd -a -t f . /output | xargs ls -l"
 }
 
 
@@ -305,16 +303,16 @@ _cat() {  # output a file from the given path to stdout as a tar archive
   local filename=${1:?Filename required}
 
   local cid=$(sudo docker run -d \
-    --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
-    $DOCKER_IMAGE_NAME true)
+    --mount source="${sanitized_image_name}_images",target=/output \
+    $image_name true)
   sudo docker cp ${cid}:$filename -
   sudo docker rm $cid
 }
 
 
 _cleanup() {  # remove volumes containing the built images
-  sudo docker volume rm ${DOCKER_IMAGE_NAME}_images
-  sudo docker volume rm ${DOCKER_IMAGE_NAME}_cache
+  sudo docker volume rm ${sanitized_image_name}_images
+  sudo docker volume rm ${sanitized_image_name}_cache
 }
 
 
@@ -340,10 +338,10 @@ _packer() {  # run packer in BUILD_DIRECTORY
     --env PKR_VAR_vault_pki_secrets_path="${VAULT_PKI_SECRETS_PATH:-pki}" \
     --device=/dev/kvm \
     --mount type=bind,source=${PWD},target=/wd/,readonly \
-    --mount source="${DOCKER_IMAGE_NAME}_images",target=/output \
-    --mount source="${DOCKER_IMAGE_NAME}_cache",target=${PACKER_CACHE_DIR} \
+    --mount source="${sanitized_image_name}_images",target=/output \
+    --mount source="${sanitized_image_name}_cache",target=${PACKER_CACHE_DIR} \
     "${args[@]}" \
-    --rm -i "$DOCKER_IMAGE_NAME" -s -- <<EOF
+    --rm -i "$image_name" -s -- <<EOF
 set -x
 packer $@
 EOF
