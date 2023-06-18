@@ -152,6 +152,9 @@ jobs:
               - PKR_VAR_http_proxy: ((vars.http_proxy))
               - PKR_VAR_https_proxy: ((vars.https_proxy))
               - PKR_VAR_no_proxy: ((vars.no_proxy))
+              - PKR_VAR_enable_pki_install: "true"
+              - PKR_VAR_vault_addr: ((vars.vault_addr))
+              - PKR_VAR_vault_pki_secrets_path: ((vars.vault_pki_path))
 
       - put: r-salt
         params:
@@ -239,6 +242,9 @@ jobs:
               - PKR_VAR_http_proxy: ((vars.http_proxy))
               - PKR_VAR_https_proxy: ((vars.https_proxy))
               - PKR_VAR_no_proxy: ((vars.no_proxy))
+              - PKR_VAR_enable_pki_install: "true"
+              - PKR_VAR_vault_addr: ((vars.vault_addr))
+              - PKR_VAR_vault_pki_secrets_path: ((vars.vault_pki_path))
 
       - put: r-salt
         params:
