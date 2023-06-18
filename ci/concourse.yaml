@@ -111,6 +111,8 @@ jobs:
               passed:
                 - j-prepare-environment
             - get: r-docker-image-build
+              params:
+                skip_download: true
               trigger: true
               passed:
                 - j-build-image
@@ -150,6 +152,8 @@ jobs:
               passed:
                 - j-prepare-environment
             - get: r-docker-image-build
+              params:
+                skip_download: true
               trigger: true
               passed:
                 - j-build-image
