@@ -270,6 +270,95 @@ jobs:
               - PKR_VAR_no_proxy: ((vars.no_proxy))
 
 
+  - name: j-build-debian-cloud
+    serial: true
+    serial_groups:
+      - imagebuild
+    ensure:
+      do:
+        - put: r-salt
+          params:
+            tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
+            tgt_type: compound
+            fun: state.single
+            args:
+              - cmd.run
+              - "./main.sh cleanup_build"
+            kwargs:
+              shell: /bin/bash
+              cwd: /data/tmp/packer-templates
+              env:
+                - DOCKER_REGISTRY: ((registry.registry))
+                - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+    plan:
+      - in_parallel:
+          fail_fast: true
+          steps:
+            - get: r-((git_repo_name))
+              trigger: true
+              passed:
+                - j-prepare-environment
+            - get: r-docker-image-build
+              params:
+                skip_download: true
+              trigger: true
+              passed:
+                - j-build-image
+
+      - put: r-salt
+        params:
+          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
+          tgt_type: compound
+          fun: state.single
+          args:
+            - cmd.run
+            - "./main.sh debian cloud"
+          kwargs:
+            shell: /bin/bash
+            cwd: /data/tmp/packer-templates
+            env:
+              - DISTRIBUTION: debian-11.6-amd64
+              - DOCKER_REGISTRY: ((registry.registry))
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - http_proxy: ((vars.http_proxy))
+              - https_proxy: ((vars.https_proxy))
+              - no_proxy: ((vars.no_proxy))
+              - PKR_VAR_http_proxy: ((vars.http_proxy))
+              - PKR_VAR_https_proxy: ((vars.https_proxy))
+              - PKR_VAR_no_proxy: ((vars.no_proxy))
+              - PKR_VAR_iso_url: "((vars.minio_endpoint_data))/images/packer/debian/debian-11.6-amd64.qcow2"
+              - PKR_VAR_iso_checksum: "file:((vars.minio_endpoint_data))/images/packer/debian/debian-11.6-amd64.sha256"
+
+      - put: r-salt
+        params:
+          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
+          tgt_type: compound
+          fun: state.single
+          args:
+            - cmd.run
+          kwargs:
+            name: |
+                set -e
+                mkdir -p ./output
+                ./packer-templates/main.sh list
+                ./packer-templates/main.sh cat '/output/cloud' | tar -xf - -C ./output
+                ls -lR ./output
+                mc cp --recursive ./output/cloud data/images/packer/
+                rm -rf ./output
+            shell: /bin/bash
+            cwd: /data/tmp
+            env:
+              - MC_HOST_data: "https://((minio/packer-templates.access_key)):((minio/packer-templates.secret_key))@((vars.minio_host_data))"
+              - DOCKER_REGISTRY: ((registry.registry))
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - http_proxy: ((vars.http_proxy))
+              - https_proxy: ((vars.https_proxy))
+              - no_proxy: ((vars.no_proxy))
+              - PKR_VAR_http_proxy: ((vars.http_proxy))
+              - PKR_VAR_https_proxy: ((vars.https_proxy))
+              - PKR_VAR_no_proxy: ((vars.no_proxy))
+
+
   - name: j-prepare-environment
     serial: true
     plan:
