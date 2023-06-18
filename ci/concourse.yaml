@@ -106,15 +106,15 @@ jobs:
           params:
             tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
             tgt_type: compound
-            fun: cmd.run
+            fun: state.single
             args:
+              - cmd.run
               - "./main.sh cleanup_build"
             kwargs:
-              raise_err: true
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
               env:
-                DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+                - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
 
     plan:
       - in_parallel:
@@ -135,66 +135,52 @@ jobs:
         params:
           tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
           tgt_type: compound
-          fun: cmd.run
+          fun: state.single
           args:
-            - |
-                ./main.sh debian base
-                if (($?)); then
-                  rc=false
-                else
-                  rc=true
-                fi
-                # required to return a success result for the resource
-                jq -n --arg rc "$rc" '{ success: $rc }'
+            - cmd.run
+            - "./main.sh debian base"
           kwargs:
-            raise_err: true
             shell: /bin/bash
             cwd: /data/tmp/packer-templates
             env:
-              DISTRIBUTION: debian-11.6-amd64
-              DOCKER_REGISTRY: ((registry.registry))
-              DOCKER_IMAGE_NAME: ((git_repo_name)):latest
-              http_proxy: ((vars.http_proxy))
-              https_proxy: ((vars.https_proxy))
-              no_proxy: ((vars.no_proxy))
-              PKR_VAR_http_proxy: ((vars.http_proxy))
-              PKR_VAR_https_proxy: ((vars.https_proxy))
-              PKR_VAR_no_proxy: ((vars.no_proxy))
+              - DISTRIBUTION: debian-11.6-amd64
+              - DOCKER_REGISTRY: ((registry.registry))
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - http_proxy: ((vars.http_proxy))
+              - https_proxy: ((vars.https_proxy))
+              - no_proxy: ((vars.no_proxy))
+              - PKR_VAR_http_proxy: ((vars.http_proxy))
+              - PKR_VAR_https_proxy: ((vars.https_proxy))
+              - PKR_VAR_no_proxy: ((vars.no_proxy))
 
       - put: r-salt
         params:
           tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
           tgt_type: compound
-          fun: cmd.run
+          fun: state.single
           args:
-            - |
-                (
+            - cmd.run
+          kwargs:
+            name: |
                 set -e
                 mkdir -p ./output
                 ./packer-templates/main.sh list
                 ./packer-templates/main.sh cat '/output/debian' | tar -xf - -C ./output
-                tree ./output
+                ls -lR ./output
                 mc cp --recursive ./output/debian data/images/packer/
-                ) >&2
-                if (($?)); then
-                  rc=false
-                else
-                  rc=true
-                fi
                 rm -rf ./output
-                # required to return a success result for the resource
-                jq -n --arg rc "$rc" '{ success: $rc }'
-          kwargs:
             shell: /bin/bash
             cwd: /data/tmp
             env:
-              MC_HOST_data: "((r-minio.access_key)):((r-minio.secret_key))@((vars.minio_endpoint_data))"
-              http_proxy: ((vars.http_proxy))
-              https_proxy: ((vars.https_proxy))
-              no_proxy: ((vars.no_proxy))
-              PKR_VAR_http_proxy: ((vars.http_proxy))
-              PKR_VAR_https_proxy: ((vars.https_proxy))
-              PKR_VAR_no_proxy: ((vars.no_proxy))
+              - MC_HOST_data: "https://((minio/packer-templates.access_key)):((minio/packer-templates.secret_key))@((vars.minio_host_data))"
+              - DOCKER_REGISTRY: ((registry.registry))
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - http_proxy: ((vars.http_proxy))
+              - https_proxy: ((vars.https_proxy))
+              - no_proxy: ((vars.no_proxy))
+              - PKR_VAR_http_proxy: ((vars.http_proxy))
+              - PKR_VAR_https_proxy: ((vars.https_proxy))
+              - PKR_VAR_no_proxy: ((vars.no_proxy))
 
 
   - name: j-build-archlinux-base
@@ -207,15 +193,16 @@ jobs:
           params:
             tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
             tgt_type: compound
-            fun: cmd.run
+            fun: state.single
             args:
+              - cmd.run
               - "./main.sh cleanup_build"
             kwargs:
-              raise_err: true
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
               env:
-                DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+                - DOCKER_REGISTRY: ((registry.registry))
+                - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
     plan:
       - in_parallel:
           fail_fast: true
@@ -235,66 +222,52 @@ jobs:
         params:
           tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
           tgt_type: compound
-          fun: cmd.run
+          fun: state.single
           args:
-            - |
-                ./main.sh arch base
-                if (($?)); then
-                  rc=false
-                else
-                  rc=true
-                fi
-                # required to return a success result for the resource
-                jq -n --arg rc "$rc" '{ success: $rc }'
+            - cmd.run
+            - "./main.sh arch base"
           kwargs:
-            raise_err: true
             shell: /bin/bash
             cwd: /data/tmp/packer-templates
             env:
-              DISTRIBUTION: archlinux-x86_64
-              DOCKER_REGISTRY: ((registry.registry))
-              DOCKER_IMAGE_NAME: ((git_repo_name)):latest
-              http_proxy: ((vars.http_proxy))
-              https_proxy: ((vars.https_proxy))
-              no_proxy: ((vars.no_proxy))
-              PKR_VAR_http_proxy: ((vars.http_proxy))
-              PKR_VAR_https_proxy: ((vars.https_proxy))
-              PKR_VAR_no_proxy: ((vars.no_proxy))
+              - DISTRIBUTION: archlinux-x86_64
+              - DOCKER_REGISTRY: ((registry.registry))
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - http_proxy: ((vars.http_proxy))
+              - https_proxy: ((vars.https_proxy))
+              - no_proxy: ((vars.no_proxy))
+              - PKR_VAR_http_proxy: ((vars.http_proxy))
+              - PKR_VAR_https_proxy: ((vars.https_proxy))
+              - PKR_VAR_no_proxy: ((vars.no_proxy))
 
       - put: r-salt
         params:
           tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
           tgt_type: compound
-          fun: cmd.run
+          fun: state.single
           args:
-            - |
-                (
+            - cmd.run
+          kwargs:
+            name: |
                 set -e
                 mkdir -p ./output
                 ./packer-templates/main.sh list
                 ./packer-templates/main.sh cat '/output/archlinux' | tar -xf - -C ./output
-                tree ./output
+                ls -lR ./output
                 mc cp --recursive ./output/archlinux data/images/packer/
-                ) >&2
-                if (($?)); then
-                  rc=false
-                else
-                  rc=true
-                fi
                 rm -rf ./output
-                # required to return a success result for the resource
-                jq -n --arg rc "$rc" '{ success: $rc }'
-          kwargs:
             shell: /bin/bash
             cwd: /data/tmp
             env:
-              MC_HOST_data: "((r-minio.access_key)):((r-minio.secret_key))@((vars.minio_endpoint_data))"
-              http_proxy: ((vars.http_proxy))
-              https_proxy: ((vars.https_proxy))
-              no_proxy: ((vars.no_proxy))
-              PKR_VAR_http_proxy: ((vars.http_proxy))
-              PKR_VAR_https_proxy: ((vars.https_proxy))
-              PKR_VAR_no_proxy: ((vars.no_proxy))
+              - MC_HOST_data: "https://((minio/packer-templates.access_key)):((minio/packer-templates.secret_key))@((vars.minio_host_data))"
+              - DOCKER_REGISTRY: ((registry.registry))
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - http_proxy: ((vars.http_proxy))
+              - https_proxy: ((vars.https_proxy))
+              - no_proxy: ((vars.no_proxy))
+              - PKR_VAR_http_proxy: ((vars.http_proxy))
+              - PKR_VAR_https_proxy: ((vars.https_proxy))
+              - PKR_VAR_no_proxy: ((vars.no_proxy))
 
 
   - name: j-prepare-environment
