@@ -34,7 +34,6 @@ resources:
         - ci/*
         - Dockerfile
 
-
   - name: r-((git_repo_name))-dockerfile
     type: git
     check_every: "24h"
@@ -96,12 +95,27 @@ resources:
       disable_ci_skip: true
 
 
-
 jobs:
   - name: j-build-debian-base
     serial: true
     serial_groups:
       - imagebuild
+    ensure:
+      do:
+        - put: r-salt
+          params:
+            tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
+            tgt_type: compound
+            fun: cmd.run
+            args:
+              - "./main.sh cleanup_build"
+            kwargs:
+              raise_err: true
+              shell: /bin/bash
+              cwd: /data/tmp/packer-templates
+              env:
+                DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+
     plan:
       - in_parallel:
           fail_fast: true
@@ -123,7 +137,15 @@ jobs:
           tgt_type: compound
           fun: cmd.run
           args:
-            - "./main.sh debian base"
+            - |
+                ./main.sh debian base
+                if (($?)); then
+                  rc=false
+                else
+                  rc=true
+                fi
+                # required to return a success result for the resource
+                jq -n --arg rc "$rc" '{ success: $rc }'
           kwargs:
             raise_err: true
             shell: /bin/bash
@@ -139,10 +161,58 @@ jobs:
               PKR_VAR_https_proxy: ((vars.https_proxy))
               PKR_VAR_no_proxy: ((vars.no_proxy))
 
+      - put: r-salt
+        params:
+          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
+          tgt_type: compound
+          fun: cmd.run
+          args:
+            - |
+                (
+                set -e
+                mkdir -p ./output
+                ./main.sh cat '/output/debian' | tar -xf - -C ./output
+                mc cp debian data/images/packer/
+                )
+                if (($?)); then
+                  rc=false
+                else
+                  rc=true
+                fi
+                # required to return a success result for the resource
+                jq -n --arg rc "$rc" '{ success: $rc }'
+          kwargs:
+            shell: /bin/bash
+            cwd: /data/tmp
+            env:
+              MC_HOST_data: "((r-minio.access_key)):((r-minio.secret_key))@((vars.minio_endpoint_data))"
+              http_proxy: ((vars.http_proxy))
+              https_proxy: ((vars.https_proxy))
+              no_proxy: ((vars.no_proxy))
+              PKR_VAR_http_proxy: ((vars.http_proxy))
+              PKR_VAR_https_proxy: ((vars.https_proxy))
+              PKR_VAR_no_proxy: ((vars.no_proxy))
+
+
   - name: j-build-archlinux-base
     serial: true
     serial_groups:
       - imagebuild
+    ensure:
+      do:
+        - put: r-salt
+          params:
+            tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
+            tgt_type: compound
+            fun: cmd.run
+            args:
+              - "./main.sh cleanup_build"
+            kwargs:
+              raise_err: true
+              shell: /bin/bash
+              cwd: /data/tmp/packer-templates
+              env:
+                DOCKER_IMAGE_NAME: ((git_repo_name)):latest
     plan:
       - in_parallel:
           fail_fast: true
@@ -164,7 +234,15 @@ jobs:
           tgt_type: compound
           fun: cmd.run
           args:
-            - "./main.sh arch base"
+            - |
+                ./main.sh arch base
+                if (($?)); then
+                  rc=false
+                else
+                  rc=true
+                fi
+                # required to return a success result for the resource
+                jq -n --arg rc "$rc" '{ success: $rc }'
           kwargs:
             raise_err: true
             shell: /bin/bash
@@ -179,6 +257,39 @@ jobs:
               PKR_VAR_http_proxy: ((vars.http_proxy))
               PKR_VAR_https_proxy: ((vars.https_proxy))
               PKR_VAR_no_proxy: ((vars.no_proxy))
+
+      - put: r-salt
+        params:
+          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
+          tgt_type: compound
+          fun: cmd.run
+          args:
+            - |
+                (
+                set -e
+                mkdir -p ./output
+                ./main.sh cat '/output/archlinux' | tar -xf - -C ./output
+                mc cp archlinux data/images/packer/
+                )
+                if (($?)); then
+                  rc=false
+                else
+                  rc=true
+                fi
+                # required to return a success result for the resource
+                jq -n --arg rc "$rc" '{ success: $rc }'
+          kwargs:
+            shell: /bin/bash
+            cwd: /data/tmp
+            env:
+              MC_HOST_data: "((r-minio.access_key)):((r-minio.secret_key))@((vars.minio_endpoint_data))"
+              http_proxy: ((vars.http_proxy))
+              https_proxy: ((vars.https_proxy))
+              no_proxy: ((vars.no_proxy))
+              PKR_VAR_http_proxy: ((vars.http_proxy))
+              PKR_VAR_https_proxy: ((vars.https_proxy))
+              PKR_VAR_no_proxy: ((vars.no_proxy))
+
 
   - name: j-prepare-environment
     serial: true

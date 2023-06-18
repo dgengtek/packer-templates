@@ -321,6 +321,11 @@ _rm() {  # alias to cleanup
 }
 
 
+_cleanup_build() {  # alias to cleanup
+  sudo docker volume rm ${sanitized_image_name}_images
+}
+
+
 _packer() {  # run packer in BUILD_DIRECTORY
   __add_env_var PKR_VAR_distribution
   __add_env_var PKR_VAR_output_directory
