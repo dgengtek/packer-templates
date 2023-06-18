@@ -171,14 +171,17 @@ jobs:
                 (
                 set -e
                 mkdir -p ./output
-                ./main.sh cat '/output/debian' | tar -xf - -C ./output
-                mc cp debian data/images/packer/
-                )
+                ./packer-templates/main.sh list
+                ./packer-templates/main.sh cat '/output/debian' | tar -xf - -C ./output
+                tree ./output
+                mc cp --recursive ./output/debian data/images/packer/
+                ) >&2
                 if (($?)); then
                   rc=false
                 else
                   rc=true
                 fi
+                rm -rf ./output
                 # required to return a success result for the resource
                 jq -n --arg rc "$rc" '{ success: $rc }'
           kwargs:
@@ -268,14 +271,17 @@ jobs:
                 (
                 set -e
                 mkdir -p ./output
-                ./main.sh cat '/output/archlinux' | tar -xf - -C ./output
-                mc cp archlinux data/images/packer/
-                )
+                ./packer-templates/main.sh list
+                ./packer-templates/main.sh cat '/output/archlinux' | tar -xf - -C ./output
+                tree ./output
+                mc cp --recursive ./output/archlinux data/images/packer/
+                ) >&2
                 if (($?)); then
                   rc=false
                 else
                   rc=true
                 fi
+                rm -rf ./output
                 # required to return a success result for the resource
                 jq -n --arg rc "$rc" '{ success: $rc }'
           kwargs:
