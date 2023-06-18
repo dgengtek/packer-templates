@@ -12,6 +12,11 @@ variable "distribution" {
   type    = string
 }
 
+variable "boot_wait" {
+  type    = string
+  default = "30s"
+}
+
 variable "enable_pki_install" {
   type    = bool
   default = false
@@ -79,7 +84,7 @@ locals {
 source "qemu" "main" {
   accelerator      = "kvm"
   boot_command     = try(local.v.boot_command, [])
-  boot_wait        = "1s"
+  boot_wait        = "${var.boot_wait}"
   cpus             = "${var.cpus}"
   disk_compression = true
   disk_interface   = "virtio"

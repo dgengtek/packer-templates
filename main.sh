@@ -330,6 +330,7 @@ _packer() {  # run packer in BUILD_DIRECTORY
   __add_env_var PKR_VAR_http_proxy http_proxy
   __add_env_var PKR_VAR_https_proxy https_proxy
   __add_env_var PKR_VAR_no_proxy no_proxy
+  __add_env_var PKR_VAR_boot_wait
   __add_env_var PACKER_CACHE_DIR
   sudo docker run \
     --env PKR_VAR_build_directory="${PKR_VAR_build_directory:-/output}" \
