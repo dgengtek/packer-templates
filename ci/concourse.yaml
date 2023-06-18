@@ -110,6 +110,7 @@ jobs:
             args:
               - cmd.run
               - "./main.sh cleanup_build"
+              - "queue=True"
             kwargs:
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
@@ -139,6 +140,7 @@ jobs:
           args:
             - cmd.run
             - "./main.sh debian base"
+            - "queue=True"
           kwargs:
             shell: /bin/bash
             cwd: /data/tmp/packer-templates
@@ -163,6 +165,7 @@ jobs:
           fun: state.single
           args:
             - cmd.run
+            - "queue=True"
           kwargs:
             name: |
                 set -e
@@ -200,6 +203,7 @@ jobs:
             args:
               - cmd.run
               - "./main.sh cleanup_build"
+              - "queue=True"
             kwargs:
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
@@ -229,6 +233,7 @@ jobs:
           args:
             - cmd.run
             - "./main.sh arch base"
+            - "queue=True"
           kwargs:
             shell: /bin/bash
             cwd: /data/tmp/packer-templates
@@ -253,6 +258,7 @@ jobs:
           fun: state.single
           args:
             - cmd.run
+            - "queue=True"
           kwargs:
             name: |
                 set -e
@@ -290,6 +296,7 @@ jobs:
             args:
               - cmd.run
               - "./main.sh cleanup_build"
+              - "queue=True"
             kwargs:
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
@@ -319,6 +326,7 @@ jobs:
           args:
             - cmd.run
             - "./main.sh debian cloud"
+            - "queue=True"
           kwargs:
             shell: /bin/bash
             cwd: /data/tmp/packer-templates
@@ -342,6 +350,7 @@ jobs:
           fun: state.single
           args:
             - cmd.run
+            - "queue=True"
           kwargs:
             name: |
                 set -e
