@@ -435,6 +435,7 @@ __build_terminal() {  # build terminal image based on the base image
 __build_salt() {  # <parent_image_type>  build saltstack image based on a parent image type
   __env_salt
   __build_salt_${1:?Salt type required, either base, cloud or kitchen}
+  shift
   _packer build -var-file salt/vars/common.json "$@" salt/
 }
 
