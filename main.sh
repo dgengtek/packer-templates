@@ -322,7 +322,8 @@ _rm() {  # alias to cleanup
   _cleanup
 }
 
-__cleanup_build() {
+
+_cleanup_build() {
   _sh -c "rm -rvf $PKR_VAR_build_directory"
 }
 

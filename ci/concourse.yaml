@@ -109,13 +109,16 @@ jobs:
             fun: state.single
             args:
               - cmd.run
-              - "./main.sh cleanup_build"
               - "queue=True"
             kwargs:
+              name: |
+                  ./main.sh cleanup_build
+                  rm -rf "./${PKR_VAR_build_directory}"
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
               env:
                 - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+                - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
     plan:
       - in_parallel:
@@ -131,6 +134,9 @@ jobs:
               trigger: true
               passed:
                 - j-build-image
+
+      - load_var: git_ref
+        file: r-((git_repo_name))/.git/ref
 
       - put: r-salt
         params:
@@ -157,6 +163,7 @@ jobs:
               - PKR_VAR_enable_pki_install: "true"
               - PKR_VAR_vault_addr: ((vars.vault_addr))
               - PKR_VAR_vault_pki_secrets_path: ((vars.vault_pki_path))
+              - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
       - put: r-salt
         params:
@@ -169,12 +176,11 @@ jobs:
           kwargs:
             name: |
                 set -e
-                mkdir -p ./output
+                mkdir -p "./${PKR_VAR_build_directory}"
                 ./packer-templates/main.sh list
-                ./packer-templates/main.sh cat '/output/debian' | tar -xf - -C ./output
-                ls -lR ./output
-                mc cp --recursive ./output/debian data/images/packer/
-                rm -rf ./output
+                ./packer-templates/main.sh cat "${PKR_VAR_build_directory}/debian" | tar -xf - -C "./${PKR_VAR_build_directory}"
+                ls -lR "./${PKR_VAR_build_directory}"
+                mc cp --recursive "./${PKR_VAR_build_directory}/debian" data/images/packer/
             shell: /bin/bash
             cwd: /data/tmp
             env:
@@ -187,6 +193,7 @@ jobs:
               - PKR_VAR_http_proxy: ((vars.http_proxy))
               - PKR_VAR_https_proxy: ((vars.https_proxy))
               - PKR_VAR_no_proxy: ((vars.no_proxy))
+              - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
 
   - name: j-build-archlinux-base
@@ -202,14 +209,17 @@ jobs:
             fun: state.single
             args:
               - cmd.run
-              - "./main.sh cleanup_build"
               - "queue=True"
             kwargs:
+              name: |
+                  ./main.sh cleanup_build
+                  rm -rf "./${PKR_VAR_build_directory}"
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
               env:
                 - DOCKER_REGISTRY: ((registry.registry))
                 - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+                - PKR_VAR_build_directory: "/output/((.:git_ref))"
     plan:
       - in_parallel:
           fail_fast: true
@@ -224,6 +234,9 @@ jobs:
               trigger: true
               passed:
                 - j-build-image
+
+      - load_var: git_ref
+        file: r-((git_repo_name))/.git/ref
 
       - put: r-salt
         params:
@@ -250,6 +263,7 @@ jobs:
               - PKR_VAR_enable_pki_install: "true"
               - PKR_VAR_vault_addr: ((vars.vault_addr))
               - PKR_VAR_vault_pki_secrets_path: ((vars.vault_pki_path))
+              - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
       - put: r-salt
         params:
@@ -262,12 +276,11 @@ jobs:
           kwargs:
             name: |
                 set -e
-                mkdir -p ./output
+                mkdir -p "./${PKR_VAR_build_directory}"
                 ./packer-templates/main.sh list
-                ./packer-templates/main.sh cat '/output/archlinux' | tar -xf - -C ./output
-                ls -lR ./output
-                mc cp --recursive ./output/archlinux data/images/packer/
-                rm -rf ./output
+                ./packer-templates/main.sh cat "${PKR_VAR_build_directory}/archlinux" | tar -xf - -C "./${PKR_VAR_build_directory}"
+                ls -lR "./${PKR_VAR_build_directory}"
+                mc cp --recursive "./${PKR_VAR_build_directory}/archlinux" data/images/packer/
             shell: /bin/bash
             cwd: /data/tmp
             env:
@@ -280,6 +293,7 @@ jobs:
               - PKR_VAR_http_proxy: ((vars.http_proxy))
               - PKR_VAR_https_proxy: ((vars.https_proxy))
               - PKR_VAR_no_proxy: ((vars.no_proxy))
+              - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
 
   - name: j-build-debian-cloud
@@ -295,14 +309,17 @@ jobs:
             fun: state.single
             args:
               - cmd.run
-              - "./main.sh cleanup_build"
               - "queue=True"
             kwargs:
+              name: |
+                  ./main.sh cleanup_build
+                  rm -rf "./${PKR_VAR_build_directory}"
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
               env:
                 - DOCKER_REGISTRY: ((registry.registry))
                 - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+                - PKR_VAR_build_directory: "/output/((.:git_ref))"
     plan:
       - in_parallel:
           fail_fast: true
@@ -317,6 +334,9 @@ jobs:
               trigger: true
               passed:
                 - j-build-image
+
+      - load_var: git_ref
+        file: r-((git_repo_name))/.git/ref
 
       - put: r-salt
         params:
@@ -342,6 +362,7 @@ jobs:
               - PKR_VAR_no_proxy: ((vars.no_proxy))
               - PKR_VAR_iso_url: "((vars.minio_endpoint_data))/images/packer/debian/debian-11.6-amd64.qcow2"
               - PKR_VAR_iso_checksum: "file:((vars.minio_endpoint_data))/images/packer/debian/debian-11.6-amd64.sha256"
+              - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
       - put: r-salt
         params:
@@ -354,12 +375,11 @@ jobs:
           kwargs:
             name: |
                 set -e
-                mkdir -p ./output
+                mkdir -p "./${PKR_VAR_build_directory}"
                 ./packer-templates/main.sh list
-                ./packer-templates/main.sh cat '/output/cloud' | tar -xf - -C ./output
-                ls -lR ./output
-                mc cp --recursive ./output/cloud data/images/packer/
-                rm -rf ./output
+                ./packer-templates/main.sh cat "${PKR_VAR_build_directory}/cloud" | tar -xf - -C "./${PKR_VAR_build_directory}"
+                ls -lR "./${PKR_VAR_build_directory}"
+                mc cp --recursive "./${PKR_VAR_build_directory}/cloud" data/images/packer/
             shell: /bin/bash
             cwd: /data/tmp
             env:
@@ -372,6 +392,7 @@ jobs:
               - PKR_VAR_http_proxy: ((vars.http_proxy))
               - PKR_VAR_https_proxy: ((vars.https_proxy))
               - PKR_VAR_no_proxy: ((vars.no_proxy))
+              - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
 
   - name: j-prepare-environment
