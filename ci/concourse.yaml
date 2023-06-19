@@ -95,6 +95,12 @@ resources:
       disable_ci_skip: true
 
 
+  - name: every-30d
+    type: time
+    source:
+      interval: 720h
+
+
 jobs:
   - name: j-build-debian-base
     serial: true
@@ -124,6 +130,8 @@ jobs:
       - in_parallel:
           fail_fast: true
           steps:
+            - get: every-30d
+              trigger: true
             - get: r-((git_repo_name))
               trigger: true
               passed:
@@ -224,6 +232,8 @@ jobs:
       - in_parallel:
           fail_fast: true
           steps:
+            - get: every-30d
+              trigger: true
             - get: r-((git_repo_name))
               trigger: true
               passed:
@@ -324,10 +334,15 @@ jobs:
       - in_parallel:
           fail_fast: true
           steps:
+            - get: every-30d
+              trigger: true
+              passed:
+                - j-build-debian-base
             - get: r-((git_repo_name))
               trigger: true
               passed:
                 - j-prepare-environment
+                - j-build-debian-base
             - get: r-docker-image-build
               params:
                 skip_download: true
