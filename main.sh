@@ -323,8 +323,13 @@ _rm() {  # alias to cleanup
 }
 
 
+_cleanup_images() {
+  sudo docker volume rm ${sanitized_image_name}_images
+}
+
+
 _cleanup_build() {
-  _sh -c "rm -rvf $PKR_VAR_build_directory"
+  _sh -c "rm -rvf $PKR_VAR_build_directory/*"
 }
 
 

@@ -115,14 +115,13 @@ jobs:
             fun: state.single
             args:
               - cmd.run
+              - "./main.sh cleanup_build"
               - "queue=True"
             kwargs:
-              name: |
-                  ./main.sh cleanup_build
-                  rm -rf "./${PKR_VAR_build_directory}"
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
               env:
+                - DOCKER_REGISTRY: ((registry.registry))
                 - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
                 - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
@@ -132,8 +131,12 @@ jobs:
           steps:
             - get: every-30d
               trigger: true
+              passed:
+                - j-cleanup-environment
             - get: r-((git_repo_name))
               trigger: true
+              params:
+                depth: 1
               passed:
                 - j-prepare-environment
             - get: r-docker-image-build
@@ -217,11 +220,9 @@ jobs:
             fun: state.single
             args:
               - cmd.run
+              - "./main.sh cleanup_build"
               - "queue=True"
             kwargs:
-              name: |
-                  ./main.sh cleanup_build
-                  rm -rf "./${PKR_VAR_build_directory}"
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
               env:
@@ -234,8 +235,12 @@ jobs:
           steps:
             - get: every-30d
               trigger: true
+              passed:
+                - j-cleanup-environment
             - get: r-((git_repo_name))
               trigger: true
+              params:
+                depth: 1
               passed:
                 - j-prepare-environment
             - get: r-docker-image-build
@@ -319,11 +324,9 @@ jobs:
             fun: state.single
             args:
               - cmd.run
+              - "./main.sh cleanup_build"
               - "queue=True"
             kwargs:
-              name: |
-                  ./main.sh cleanup_build
-                  rm -rf "./${PKR_VAR_build_directory}"
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
               env:
@@ -338,8 +341,11 @@ jobs:
               trigger: true
               passed:
                 - j-build-debian-base
+                - j-cleanup-environment
             - get: r-((git_repo_name))
               trigger: true
+              params:
+                depth: 1
               passed:
                 - j-prepare-environment
                 - j-build-debian-base
@@ -417,6 +423,7 @@ jobs:
         trigger: true
         params:
           depth: 1
+
       - put: r-salt
         attempts: 3
         params:
@@ -426,6 +433,45 @@ jobs:
           args:
             - "git,binary"
             - "queue=True"
+
+
+  - name: j-cleanup-environment
+    serial: true
+    serial_groups:
+      - imagebuild
+    plan:
+      - in_parallel:
+          fail_fast: true
+          steps:
+            - get: r-((git_repo_name))
+              trigger: false
+              params:
+                depth: 1
+            - get: every-30d
+              trigger: true
+
+      - load_var: git_ref
+        file: r-((git_repo_name))/.git/ref
+
+      - put: r-salt
+        params:
+          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
+          tgt_type: compound
+          fun: state.single
+          args:
+            - cmd.run
+            - "queue=True"
+          kwargs:
+            name: |
+                ./main.sh rm
+                rm -rf "./${PKR_VAR_build_directory}"
+            shell: /bin/bash
+            cwd: /data/tmp/packer-templates
+            env:
+              - DOCKER_REGISTRY: ((registry.registry))
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - PKR_VAR_build_directory: "/output/((.:git_ref))"
+
 
   - name: j-build-image
     serial: true
