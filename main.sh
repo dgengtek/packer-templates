@@ -28,6 +28,7 @@ declare image_name=$DOCKER_IMAGE_NAME
 # for volume names
 readonly sanitized_image_name=${DOCKER_IMAGE_NAME%:*}
 [[ -n ${DOCKER_REGISTRY:-""} ]] && image_name="${DOCKER_REGISTRY}/${image_name}"
+readonly PKR_VAR_build_directory=${PKR_VAR_build_directory:-/output}
 
 
 usage() {
@@ -53,6 +54,7 @@ EOF
 
 
 main() {
+  local -r volume_mountpoint=$(__get_first_path_component "$PKR_VAR_build_directory")
 
   # flags
 
@@ -285,17 +287,17 @@ _docker() {  # build docker image with dependencies required for build
 _sh() {  # run interactive bash shell in container
   sudo docker run \
     --device=/dev/kvm \
-    --mount source="${sanitized_image_name}_images",target=/output \
+    --mount source="${sanitized_image_name}_images",target=$volume_mountpoint \
     --mount source="${sanitized_image_name}_cache",target=${PACKER_CACHE_DIR} \
-    --rm -it "$image_name"
+    --rm -it "$image_name" "$@"
 }
 
 
 _list() {  # show content of output directory containing the built images
   sudo docker run \
     --device=/dev/kvm \
-    --mount source="${sanitized_image_name}_images",target=/output \
-    --rm -i "$image_name" -c "fd -a -t f . /output | xargs ls -l"
+    --mount source="${sanitized_image_name}_images",target=$volume_mountpoint \
+    --rm -i "$image_name" -c "fd -a -t f . $volume_mountpoint | xargs ls -l"
 }
 
 
@@ -303,7 +305,7 @@ _cat() {  # output a file from the given path to stdout as a tar archive
   local filename=${1:?Filename required}
 
   local cid=$(sudo docker run -d \
-    --mount source="${sanitized_image_name}_images",target=/output \
+    --mount source="${sanitized_image_name}_images",target=$volume_mountpoint \
     $image_name true)
   sudo docker cp ${cid}:$filename -
   sudo docker rm $cid
@@ -320,13 +322,13 @@ _rm() {  # alias to cleanup
   _cleanup
 }
 
-
-_cleanup_build() {  # alias to cleanup
-  sudo docker volume rm ${sanitized_image_name}_images
+__cleanup_build() {
+  _sh -c "rm -rvf $PKR_VAR_build_directory"
 }
 
 
 _packer() {  # run packer in BUILD_DIRECTORY
+  __add_env_var PKR_VAR_build_directory
   __add_env_var PKR_VAR_distribution
   __add_env_var PKR_VAR_output_directory
   __add_env_var PKR_VAR_iso_url
@@ -338,13 +340,12 @@ _packer() {  # run packer in BUILD_DIRECTORY
   __add_env_var PKR_VAR_boot_wait
   __add_env_var PACKER_CACHE_DIR
   sudo docker run \
-    --env PKR_VAR_build_directory="${PKR_VAR_build_directory:-/output}" \
     --env PKR_VAR_enable_pki_install="${PKR_VAR_enable_pki_install:-false}" \
     --env PKR_VAR_vault_addr="${VAULT_ADDR:-https://vault:8200}" \
     --env PKR_VAR_vault_pki_secrets_path="${VAULT_PKI_SECRETS_PATH:-pki}" \
     --device=/dev/kvm \
     --mount type=bind,source=${PWD},target=/wd/,readonly \
-    --mount source="${sanitized_image_name}_images",target=/output \
+    --mount source="${sanitized_image_name}_images",target=$volume_mountpoint \
     --mount source="${sanitized_image_name}_cache",target=${PACKER_CACHE_DIR} \
     "${args[@]}" \
     --rm -i "$image_name" -s -- <<EOF
@@ -360,6 +361,20 @@ __add_env_var() {
   [[ -z $envname ]] && envname=$name
   eval "[[ -n \$$envname ]]" && args+=(--env $name="$(eval echo \$$envname)")
   set -u
+}
+
+
+__get_first_path_component() {
+  local res=""
+  local path=$(realpath -m ${1:?Path required})
+  while :; do
+    if [[ $path == "/" ]]; then
+      break
+    fi
+    res=$path
+    path=$(dirname $path)
+  done
+  echo "$res"
 }
 
 
