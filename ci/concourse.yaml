@@ -101,6 +101,14 @@ resources:
       interval: 720h
 
 
+  - name: after-midnight
+    type: time
+    source:
+      start: "00:00"
+      stop: "05:00"
+      location: Europe/Berlin
+
+
 jobs:
   - name: j-build-debian-base
     serial: true
@@ -133,12 +141,14 @@ jobs:
               trigger: true
               passed:
                 - j-cleanup-environment
+                - after-midnight-only
             - get: r-((git_repo_name))
               trigger: true
               params:
                 depth: 1
               passed:
                 - j-prepare-environment
+                - after-midnight-only
             - get: r-docker-image-build
               params:
                 skip_download: true
@@ -237,12 +247,14 @@ jobs:
               trigger: true
               passed:
                 - j-cleanup-environment
+                - after-midnight-only
             - get: r-((git_repo_name))
               trigger: true
               params:
                 depth: 1
               passed:
                 - j-prepare-environment
+                - after-midnight-only
             - get: r-docker-image-build
               params:
                 skip_download: true
@@ -342,6 +354,7 @@ jobs:
               passed:
                 - j-build-debian-base
                 - j-cleanup-environment
+                - after-midnight-only
             - get: r-((git_repo_name))
               trigger: true
               params:
@@ -349,6 +362,7 @@ jobs:
               passed:
                 - j-prepare-environment
                 - j-build-debian-base
+                - after-midnight-only
             - get: r-docker-image-build
               params:
                 skip_download: true
@@ -483,6 +497,8 @@ jobs:
               trigger: true
               params:
                 depth: 1
+              passed:
+                - after-midnight-only
             - get: r-docker-image-from
               trigger: false
               params:
@@ -525,3 +541,22 @@ jobs:
           params:
             subject_text: "Build failed: ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}"
             body_text: "Docker image build failed: ${ATC_EXTERNAL_URL}/teams/main/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}"
+
+
+
+  - name: after-midnight-only
+    plan:
+      - in_parallel:
+          attempts: 3
+          fail_fast: true
+          steps:
+            - get: r-((git_repo_name))
+              params:
+                depth: 1
+            - get: r-((git_repo_name))-dockerfile
+              params:
+                depth: 1
+            - get: every-30d
+              trigger: true
+            - get: after-midnight
+              trigger: true
