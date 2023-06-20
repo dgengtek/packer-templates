@@ -293,6 +293,15 @@ _sh() {  # run interactive bash shell in container
 }
 
 
+_run() {  # run in container
+  sudo docker run \
+    --device=/dev/kvm \
+    --mount source="${sanitized_image_name}_images",target=$volume_mountpoint \
+    --mount source="${sanitized_image_name}_cache",target=${PACKER_CACHE_DIR} \
+    --rm "$image_name" "$@"
+}
+
+
 _list() {  # show content of output directory containing the built images
   sudo docker run \
     --device=/dev/kvm \
@@ -329,7 +338,7 @@ _cleanup_images() {
 
 
 _cleanup_build() {
-  _sh -c "rm -rvf $PKR_VAR_build_directory/*"
+  _run -c "rm -rvf $PKR_VAR_build_directory/*"
 }
 
 
