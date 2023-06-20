@@ -17,14 +17,6 @@ env -i PATH=$PATH bash bootstrap-salt.sh \
   -P \
   git ${SALT_VERSION_TAG}
 
-
-# TODO
-#   fix for jinja2 version issue
-#   https://github.com/saltstack/salt/issues/60188
-#   fix for markupsafe
-#   https://github.com/saltstack/salt/issues/61666
-env -i PATH=$PATH bash -c 'pip3 install Jinja2==2.11.3 MarkupSafe==2.0.1'
-
 systemctl unmask salt-minion
 systemctl stop salt-minion || true
 systemctl enable salt-minion
