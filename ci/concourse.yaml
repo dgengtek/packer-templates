@@ -97,12 +97,14 @@ resources:
 
   - name: every-30d
     type: time
+    check_every: 24h
     source:
       interval: 720h
 
 
   - name: after-midnight
     type: time
+    check_every: 1h
     source:
       start: "00:00"
       stop: "05:00"
