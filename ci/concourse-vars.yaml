@@ -1,0 +1,2 @@
+# use same tag as packer version
+docker_image_tag: 1.9.1

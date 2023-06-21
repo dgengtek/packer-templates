@@ -80,7 +80,7 @@ resources:
       username: ((registry.username))
       password: ((registry.password))
       repository: ((registry.registry))/((git_repo_name))
-      tag: latest
+      tag: ((docker_image_tag))
 
 
   - name: pipelines
@@ -132,7 +132,7 @@ jobs:
               cwd: /data/tmp/packer-templates
               env:
                 - DOCKER_REGISTRY: ((registry.registry))
-                - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+                - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
                 - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
     plan:
@@ -176,7 +176,7 @@ jobs:
             env:
               - DISTRIBUTION: debian-11.6-amd64
               - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
               - http_proxy: ((vars.http_proxy))
               - https_proxy: ((vars.https_proxy))
               - no_proxy: ((vars.no_proxy))
@@ -209,7 +209,7 @@ jobs:
             env:
               - MC_HOST_data: "https://((minio/packer-templates.access_key)):((minio/packer-templates.secret_key))@((vars.minio_host_data))"
               - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
               - http_proxy: ((vars.http_proxy))
               - https_proxy: ((vars.https_proxy))
               - no_proxy: ((vars.no_proxy))
@@ -239,7 +239,7 @@ jobs:
               cwd: /data/tmp/packer-templates
               env:
                 - DOCKER_REGISTRY: ((registry.registry))
-                - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+                - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
                 - PKR_VAR_build_directory: "/output/((.:git_ref))"
     plan:
       - in_parallel:
@@ -282,7 +282,7 @@ jobs:
             env:
               - DISTRIBUTION: archlinux-x86_64
               - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
               - http_proxy: ((vars.http_proxy))
               - https_proxy: ((vars.https_proxy))
               - no_proxy: ((vars.no_proxy))
@@ -315,7 +315,7 @@ jobs:
             env:
               - MC_HOST_data: "https://((minio/packer-templates.access_key)):((minio/packer-templates.secret_key))@((vars.minio_host_data))"
               - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
               - http_proxy: ((vars.http_proxy))
               - https_proxy: ((vars.https_proxy))
               - no_proxy: ((vars.no_proxy))
@@ -345,7 +345,7 @@ jobs:
               cwd: /data/tmp/packer-templates
               env:
                 - DOCKER_REGISTRY: ((registry.registry))
-                - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+                - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
                 - PKR_VAR_build_directory: "/output/((.:git_ref))"
     plan:
       - in_parallel:
@@ -390,7 +390,7 @@ jobs:
             env:
               - DISTRIBUTION: debian-11.6-amd64
               - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
               - http_proxy: ((vars.http_proxy))
               - https_proxy: ((vars.https_proxy))
               - no_proxy: ((vars.no_proxy))
@@ -422,7 +422,7 @@ jobs:
             env:
               - MC_HOST_data: "https://((minio/packer-templates.access_key)):((minio/packer-templates.secret_key))@((vars.minio_host_data))"
               - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
               - http_proxy: ((vars.http_proxy))
               - https_proxy: ((vars.https_proxy))
               - no_proxy: ((vars.no_proxy))
@@ -485,7 +485,7 @@ jobs:
             cwd: /data/tmp/packer-templates
             env:
               - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):latest
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
               - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
 
@@ -527,6 +527,7 @@ jobs:
           BUILD_ARG_http_proxy: ((vars.http_proxy))
           BUILD_ARG_no_proxy: ((vars.no_proxy))
           BUILD_ARG_author: ((author))
+          BUILD_ARG_packer_version: ((docker_image_tag))
 
       - put: r-docker-image-build
         attempts: 3
