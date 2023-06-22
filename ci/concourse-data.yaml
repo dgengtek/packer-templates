@@ -14,6 +14,9 @@ builds:
   kitchen:
     command: "kitchen"
     passed_build: base
+  terminal:
+    command: "terminal"
+    passed_build: base
   salt-cloud:
     command: "salt cloud"
     passed_build: cloud
