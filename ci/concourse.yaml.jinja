@@ -123,6 +123,14 @@ jobs:
 {% set iso_path = build_config.passed_build ~ "/" ~ os.name ~ "/" ~ os.distribution %}
 {% endif %}
 
+
+{% if build_id == "base" %}
+{% set build_path = os.name %}
+{% else %}
+{% set build_path = build_id.split("-")[0]  %}
+{% endif %}
+
+
   - name: j-{{os.distribution | replace(".", "_")}}-{{build_id}}
     serial: true
     serial_groups:
@@ -227,9 +235,9 @@ jobs:
                 set -e
                 mkdir -p "./${PKR_VAR_build_directory}"
                 ./packer-templates/main.sh list
-                ./packer-templates/main.sh cat "${PKR_VAR_build_directory}/{{os.name}}" | tar -xf - -C "./${PKR_VAR_build_directory}"
+                ./packer-templates/main.sh cat "${PKR_VAR_build_directory}/{{build_path}}" | tar -xf - -C "./${PKR_VAR_build_directory}"
                 ls -lR "./${PKR_VAR_build_directory}"
-                mc cp --recursive "./${PKR_VAR_build_directory}/{{os.name}}" data/images/packer/
+                mc cp --recursive "./${PKR_VAR_build_directory}/{{build_path}}" data/images/packer/
             shell: /bin/bash
             cwd: /data/tmp
             env:
