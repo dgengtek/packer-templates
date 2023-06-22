@@ -7,20 +7,16 @@ config:
 builds:
   base:
     command: "base"
-    passed_builds: []
+    passed_build: ""
   cloud:
     command: "cloud"
-    passed_builds:
-      - base
+    passed_build: base
   kitchen:
     command: "kitchen"
-    passed_builds:
-      - base
+    passed_build: base
   salt-cloud:
     command: "salt cloud"
-    passed_builds:
-      - cloud
+    passed_build: cloud
   salt-kitchen:
     command: "salt kitchen"
-    passed_builds:
-      - kitchen
+    passed_build: kitchen

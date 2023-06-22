@@ -114,6 +114,15 @@ resources:
 jobs:
 {% for os in config %}
 {% for build_id, build_config in builds.items() %}
+
+{% if build_config.passed_build == "" %}
+{% set iso_path = "" %}
+{% elif build_config.passed_build == "base" %}
+{% set iso_path = os.name ~ "/" ~ os.distribution %}
+{% else %}
+{% set iso_path = build_config.passed_build ~ "/" ~ os.name ~ "/" ~ os.distribution %}
+{% endif %}
+
   - name: j-{{os.distribution | replace(".", "_")}}-{{build_id}}
     serial: true
     serial_groups:
@@ -148,9 +157,9 @@ jobs:
               passed:
                 - j-cleanup-environment
                 - after-midnight-only
-                {% for i in build_config.passed_builds %}
-                - j-{{os.distribution | replace(".", "_")}}-{{i}}
-                {% endfor %}
+                {% if build_config.passed_build %}
+                - j-{{os.distribution | replace(".", "_")}}-{{build_config.passed_build}}
+                {% endif %}
 
             - get: r-((git_repo_name))
               trigger: true
@@ -159,9 +168,9 @@ jobs:
               passed:
                 - j-prepare-environment
                 - after-midnight-only
-                {% for i in build_config.passed_builds %}
-                - j-{{os.distribution | replace(".", "_")}}-{{i}}
-                {% endfor %}
+                {% if build_config.passed_build %}
+                - j-{{os.distribution | replace(".", "_")}}-{{build_config.passed_build}}
+                {% endif %}
 
             - get: r-docker-image-build
               params:
@@ -199,6 +208,10 @@ jobs:
               - PKR_VAR_vault_addr: ((vars.vault_addr))
               - PKR_VAR_vault_pki_secrets_path: ((vars.vault_pki_path))
               - PKR_VAR_build_directory: "/output/((.:git_ref))"
+              {% if iso_path %}
+              - PKR_VAR_iso_url: "((vars.minio_endpoint_data))/images/packer/{{iso_path}}.qcow2"
+              - PKR_VAR_iso_checksum: "file:((vars.minio_endpoint_data))/images/packer/{{iso_path}}.sha256"
+              {% endif %}
 
       - put: r-salt
         params:
@@ -215,7 +228,7 @@ jobs:
                 ./packer-templates/main.sh list
                 ./packer-templates/main.sh cat "${PKR_VAR_build_directory}/{{os.name}}" | tar -xf - -C "./${PKR_VAR_build_directory}"
                 ls -lR "./${PKR_VAR_build_directory}"
-                mc cp --recursive "./${PKR_VAR_build_directory}/{{os_name}}" data/images/packer/
+                mc cp --recursive "./${PKR_VAR_build_directory}/{{os.name}}" data/images/packer/
             shell: /bin/bash
             cwd: /data/tmp
             env:
