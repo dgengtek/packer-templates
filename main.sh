@@ -35,8 +35,8 @@ usage() {
   cat >&2 << EOF
 Usage: ${0##*/} [OPTIONS] sh
 Usage: ${0##*/} [OPTIONS] packer [<packer arguments>]
-Usage: ${0##*/} [OPTIONS] <arch|debian> <build type> [<packer arguments>]
-Usage: ${0##*/} [OPTIONS] <arch|debian> salt <parent_image_type> [<packer arguments>]
+Usage: ${0##*/} [OPTIONS] <archlinux|debian> <build type> [<packer arguments>]
+Usage: ${0##*/} [OPTIONS] <archlinux|debian> salt <parent_image_type> [<packer arguments>]
 
 $(sed -n 's/^_\([^_)(]*\)() {[ ]*#\(.*\)/\1  \2/p' $__script_name | sort -k1 | column -t -N '<command>' -l 2)
 
@@ -399,7 +399,7 @@ _debian() {  # <build type>    build debian images
 }
 
 
-_arch() {  # <build type>    build archlinux images
+_archlinux() {  # <build type>    build archlinux images
   PKR_VAR_distribution="archlinux-x86_64"
   __run_DISTRIBUTION "$@"
 }

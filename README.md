@@ -1,6 +1,6 @@
 # Packer images built with qemu
 
-This repository contains configurations for building arch and debian from installation media provided from the distributions.
+This repository contains configurations for building archlinux and debian from installation media provided from the distributions.
 
 ## Requirements
 
@@ -65,7 +65,7 @@ Build the archlinux base image
 
     $ PKR_VAR_distribution=archlinux-x86-64 packer build -var-file base/archlinux/vars/common.json -var-file base/archlinux/vars/${PKR_VAR_distribution}.json base/archlinux/
     # or
-    $ bash main.sh arch base
+    $ bash main.sh archlinux base
 
 
 Repeat the same steps as with debian
@@ -74,7 +74,7 @@ Build cloud image based on the new base image
 
     $ PKR_VAR_distribution=archlinux-x86-64 packer build cloud
     # or
-    $ bash main.sh arch cloud
+    $ bash main.sh archlinux cloud
 
 
 ## Get built images
@@ -92,7 +92,7 @@ Pull image from volume
 
 ## Further options
 
-See [common variables](./files/common.pkr.hcl) which can be set and given as arguments to either the `packer -var ... ` command or to  `bash main.sh <arch|debian> <build_type> -var ...`
+See [common variables](./files/common.pkr.hcl) which can be set and given as arguments to either the `packer -var ... ` command or to  `bash main.sh <archlinux|debian> <build_type> -var ...`
 
 ## Notes
 
