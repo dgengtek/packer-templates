@@ -195,12 +195,12 @@ jobs:
             shell: /bin/bash
             cwd: /data/tmp/packer-templates
             env:
-              - DISTRIBUTION: {{os.distribution}}
               - DOCKER_REGISTRY: ((registry.registry))
               - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
               - http_proxy: ((vars.http_proxy))
               - https_proxy: ((vars.https_proxy))
               - no_proxy: ((vars.no_proxy))
+              - PKR_VAR_distribution: {{os.distribution}}
               - PKR_VAR_http_proxy: ((vars.http_proxy))
               - PKR_VAR_https_proxy: ((vars.https_proxy))
               - PKR_VAR_no_proxy: ((vars.no_proxy))
