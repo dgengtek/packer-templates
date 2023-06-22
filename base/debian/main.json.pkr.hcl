@@ -40,7 +40,7 @@ locals {
   v = {
     build_type = ""
     output_directory = "${var.build_directory}/${local.os_name}"
-    boot_command     = ["<esc><wait>", "install", " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg", " debian-installer=en_US", " auto", " locale=en_US", " kbd-chooser/method=de", " keyboard-configuration/xkb-keymap=de", " netcfg/get_hostname=packer-debian-11", " netcfg/get_domain=intranet", " fb=false", " debconf/frontend=noninteractive", " console-setup/ask_detect=false", " console-keymaps-at/keymap=de", "<enter>"]
+    boot_command     = ["<esc><wait>", "install", " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg", " debian-installer=en_US", " auto", " locale=en_US", " kbd-chooser/method=de", " keyboard-configuration/xkb-keymap=de", " netcfg/get_hostname=packer-debian", " netcfg/get_domain=lan", " fb=false", " debconf/frontend=noninteractive", " console-setup/ask_detect=false", " console-keymaps-at/keymap=de", "<enter>"]
     disk_image = false
 
     http_content            = {

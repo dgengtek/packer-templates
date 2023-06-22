@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eux
 
-readonly FQDN='provision-archlinux.lan'
+readonly FQDN='packer-archlinux.lan'
 readonly KEYMAP='de'
 readonly LANGUAGE='en_US.UTF-8'
 readonly PASSWORD=$(/usr/bin/openssl passwd -crypt 'provision')
