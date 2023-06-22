@@ -26,9 +26,14 @@ packer(the kernel, initrd and squashfs) over http and setting the kernel paramet
 
 ### Building debian images
 
+Export the required environment variable
+
+    $ export PKR_VAR_distribution=debian-12.0.0-amd64
+
+
 Build the debian base image.
 
-    $ PKR_VAR_distribution=debian-11.6-adm64 packer build -var-file base/debian/vars/common.json -var-file base/debian/vars/${PKR_VAR_distribution}.json base/debian/
+    $ packer build -var-file base/debian/vars/common.json -var-file base/debian/vars/${PKR_VAR_distribution}.json base/debian/
     #
     # or build inside docker
     $ bash main.sh debian base
@@ -36,7 +41,7 @@ Build the debian base image.
 
 Build cloud image based on the new base image
 
-    $ PKR_VAR_distribution=debian-11.6-adm64 packer build cloud
+    $ packer build cloud
     #
     # or build inside docker
     $ bash main.sh debian cloud
@@ -44,7 +49,7 @@ Build cloud image based on the new base image
 
 Build an image for kitchen based on the new base image
 
-    $ PKR_VAR_distribution=debian-11.6-adm64 packer build kitchen
+    $ packer build kitchen
     #
     # or build inside docker
     $ bash main.sh debian kitchen
@@ -52,7 +57,7 @@ Build an image for kitchen based on the new base image
 
 Build salt image based on the cloud image
 
-    $ PKR_VAR_distribution=debian-11.6-adm64 packer build -var parent_image_type=cloud salt
+    $ packer build -var parent_image_type=cloud salt
     #
     # or build inside docker
     $ bash main.sh debian salt cloud
@@ -60,10 +65,14 @@ Build salt image based on the cloud image
 
 ### Building archlinux images
 
+Export the required environment variable
+
+    $ export PKR_VAR_distribution=archlinux-x86-64
+
 
 Build the archlinux base image
 
-    $ PKR_VAR_distribution=archlinux-x86-64 packer build -var-file base/archlinux/vars/common.json -var-file base/archlinux/vars/${PKR_VAR_distribution}.json base/archlinux/
+    $ packer build -var-file base/archlinux/vars/common.json -var-file base/archlinux/vars/${PKR_VAR_distribution}.json base/archlinux/
     # or
     $ bash main.sh archlinux base
 
@@ -72,7 +81,7 @@ Repeat the same steps as with debian
 
 Build cloud image based on the new base image
 
-    $ PKR_VAR_distribution=archlinux-x86-64 packer build cloud
+    $ packer build cloud
     # or
     $ bash main.sh archlinux cloud
 

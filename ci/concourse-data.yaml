@@ -1,6 +1,6 @@
 config:
   - name: debian
-    distribution: debian-11.6-amd64
+    distribution: debian-12.0.0-amd64
   - name: archlinux
     distribution: archlinux-x86_64
 

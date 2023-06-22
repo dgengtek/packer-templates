@@ -14,7 +14,7 @@ variable "distribution" {
 
 variable "boot_wait" {
   type    = string
-  default = "30s"
+  default = "10s"
 }
 
 variable "enable_pki_install" {

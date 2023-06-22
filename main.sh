@@ -395,7 +395,7 @@ __get_first_path_component() {
 
 
 _debian() {  # <build type>    build debian images
-  [[ -z ${PKR_VAR_distribution:-""} ]] && PKR_VAR_distribution="debian-11.6-amd64"
+  [[ -z ${PKR_VAR_distribution:-""} ]] && PKR_VAR_distribution="debian-12.0.0-amd64"
   __run_DISTRIBUTION "$@"
 }
 
