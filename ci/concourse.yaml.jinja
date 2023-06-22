@@ -127,9 +127,11 @@ jobs:
             fun: state.single
             args:
               - cmd.run
-              - "./main.sh cleanup_build"
               - "queue=True"
             kwargs:
+              name: |
+                  ./main.sh cleanup_build
+                  rm -rvf "./${PKR_VAR_build_directory}/*"
               shell: /bin/bash
               cwd: /data/tmp/packer-templates
               env:
