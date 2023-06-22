@@ -1,0 +1,26 @@
+config:
+  - name: debian
+    distribution: debian-11.6.amd64
+  - name: archlinux
+    distribution: archlinux-x86_64
+
+builds:
+  base:
+    command: "base"
+    passed_builds: []
+  cloud:
+    command: "cloud"
+    passed_builds:
+      - base
+  kitchen:
+    command: "kitchen"
+    passed_builds:
+      - base
+  salt-cloud:
+    command: "salt cloud"
+    passed_builds:
+      - cloud
+  salt-kitchen:
+    command: "salt kitchen"
+    passed_builds:
+      - kitchen

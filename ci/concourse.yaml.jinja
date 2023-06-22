@@ -112,7 +112,9 @@ resources:
 
 
 jobs:
-  - name: j-build-debian-base
+{% for os in config %}
+{% for build_id, build_config in builds.items() %}
+  - name: j-{{os.distribution | replace(".", "_")}}-{{build_id}}
     serial: true
     serial_groups:
       - imagebuild
@@ -144,6 +146,10 @@ jobs:
               passed:
                 - j-cleanup-environment
                 - after-midnight-only
+                {% for i in build_config.passed_builds %}
+                - j-{{os.distribution | replace(".", "_")}}-{{i}}
+                {% endfor %}
+
             - get: r-((git_repo_name))
               trigger: true
               params:
@@ -151,6 +157,10 @@ jobs:
               passed:
                 - j-prepare-environment
                 - after-midnight-only
+                {% for i in build_config.passed_builds %}
+                - j-{{os.distribution | replace(".", "_")}}-{{i}}
+                {% endfor %}
+
             - get: r-docker-image-build
               params:
                 skip_download: true
@@ -168,13 +178,13 @@ jobs:
           fun: state.single
           args:
             - cmd.run
-            - "./main.sh debian base"
+            - "./main.sh {{os.name}} {{build_config.command}}"
             - "queue=True"
           kwargs:
             shell: /bin/bash
             cwd: /data/tmp/packer-templates
             env:
-              - DISTRIBUTION: debian-11.6-amd64
+              - DISTRIBUTION: {{os.distribution}}
               - DOCKER_REGISTRY: ((registry.registry))
               - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
               - http_proxy: ((vars.http_proxy))
@@ -201,9 +211,9 @@ jobs:
                 set -e
                 mkdir -p "./${PKR_VAR_build_directory}"
                 ./packer-templates/main.sh list
-                ./packer-templates/main.sh cat "${PKR_VAR_build_directory}/debian" | tar -xf - -C "./${PKR_VAR_build_directory}"
+                ./packer-templates/main.sh cat "${PKR_VAR_build_directory}/{{os.name}}" | tar -xf - -C "./${PKR_VAR_build_directory}"
                 ls -lR "./${PKR_VAR_build_directory}"
-                mc cp --recursive "./${PKR_VAR_build_directory}/debian" data/images/packer/
+                mc cp --recursive "./${PKR_VAR_build_directory}/{{os_name}}" data/images/packer/
             shell: /bin/bash
             cwd: /data/tmp
             env:
@@ -218,218 +228,8 @@ jobs:
               - PKR_VAR_no_proxy: ((vars.no_proxy))
               - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
-
-  - name: j-build-archlinux-base
-    serial: true
-    serial_groups:
-      - imagebuild
-    ensure:
-      do:
-        - put: r-salt
-          params:
-            tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
-            tgt_type: compound
-            fun: state.single
-            args:
-              - cmd.run
-              - "./main.sh cleanup_build"
-              - "queue=True"
-            kwargs:
-              shell: /bin/bash
-              cwd: /data/tmp/packer-templates
-              env:
-                - DOCKER_REGISTRY: ((registry.registry))
-                - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
-                - PKR_VAR_build_directory: "/output/((.:git_ref))"
-    plan:
-      - in_parallel:
-          fail_fast: true
-          steps:
-            - get: every-30d
-              trigger: true
-              passed:
-                - j-cleanup-environment
-                - after-midnight-only
-            - get: r-((git_repo_name))
-              trigger: true
-              params:
-                depth: 1
-              passed:
-                - j-prepare-environment
-                - after-midnight-only
-            - get: r-docker-image-build
-              params:
-                skip_download: true
-              trigger: true
-              passed:
-                - j-build-image
-
-      - load_var: git_ref
-        file: r-((git_repo_name))/.git/ref
-
-      - put: r-salt
-        params:
-          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
-          tgt_type: compound
-          fun: state.single
-          args:
-            - cmd.run
-            - "./main.sh arch base"
-            - "queue=True"
-          kwargs:
-            shell: /bin/bash
-            cwd: /data/tmp/packer-templates
-            env:
-              - DISTRIBUTION: archlinux-x86_64
-              - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
-              - http_proxy: ((vars.http_proxy))
-              - https_proxy: ((vars.https_proxy))
-              - no_proxy: ((vars.no_proxy))
-              - PKR_VAR_http_proxy: ((vars.http_proxy))
-              - PKR_VAR_https_proxy: ((vars.https_proxy))
-              - PKR_VAR_no_proxy: ((vars.no_proxy))
-              - PKR_VAR_enable_pki_install: "true"
-              - PKR_VAR_vault_addr: ((vars.vault_addr))
-              - PKR_VAR_vault_pki_secrets_path: ((vars.vault_pki_path))
-              - PKR_VAR_build_directory: "/output/((.:git_ref))"
-
-      - put: r-salt
-        params:
-          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
-          tgt_type: compound
-          fun: state.single
-          args:
-            - cmd.run
-            - "queue=True"
-          kwargs:
-            name: |
-                set -e
-                mkdir -p "./${PKR_VAR_build_directory}"
-                ./packer-templates/main.sh list
-                ./packer-templates/main.sh cat "${PKR_VAR_build_directory}/archlinux" | tar -xf - -C "./${PKR_VAR_build_directory}"
-                ls -lR "./${PKR_VAR_build_directory}"
-                mc cp --recursive "./${PKR_VAR_build_directory}/archlinux" data/images/packer/
-            shell: /bin/bash
-            cwd: /data/tmp
-            env:
-              - MC_HOST_data: "https://((minio/packer-templates.access_key)):((minio/packer-templates.secret_key))@((vars.minio_host_data))"
-              - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
-              - http_proxy: ((vars.http_proxy))
-              - https_proxy: ((vars.https_proxy))
-              - no_proxy: ((vars.no_proxy))
-              - PKR_VAR_http_proxy: ((vars.http_proxy))
-              - PKR_VAR_https_proxy: ((vars.https_proxy))
-              - PKR_VAR_no_proxy: ((vars.no_proxy))
-              - PKR_VAR_build_directory: "/output/((.:git_ref))"
-
-
-  - name: j-build-debian-cloud
-    serial: true
-    serial_groups:
-      - imagebuild
-    ensure:
-      do:
-        - put: r-salt
-          params:
-            tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
-            tgt_type: compound
-            fun: state.single
-            args:
-              - cmd.run
-              - "./main.sh cleanup_build"
-              - "queue=True"
-            kwargs:
-              shell: /bin/bash
-              cwd: /data/tmp/packer-templates
-              env:
-                - DOCKER_REGISTRY: ((registry.registry))
-                - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
-                - PKR_VAR_build_directory: "/output/((.:git_ref))"
-    plan:
-      - in_parallel:
-          fail_fast: true
-          steps:
-            - get: every-30d
-              trigger: true
-              passed:
-                - j-build-debian-base
-                - j-cleanup-environment
-                - after-midnight-only
-            - get: r-((git_repo_name))
-              trigger: true
-              params:
-                depth: 1
-              passed:
-                - j-prepare-environment
-                - j-build-debian-base
-                - after-midnight-only
-            - get: r-docker-image-build
-              params:
-                skip_download: true
-              trigger: true
-              passed:
-                - j-build-image
-
-      - load_var: git_ref
-        file: r-((git_repo_name))/.git/ref
-
-      - put: r-salt
-        params:
-          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
-          tgt_type: compound
-          fun: state.single
-          args:
-            - cmd.run
-            - "./main.sh debian cloud"
-            - "queue=True"
-          kwargs:
-            shell: /bin/bash
-            cwd: /data/tmp/packer-templates
-            env:
-              - DISTRIBUTION: debian-11.6-amd64
-              - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
-              - http_proxy: ((vars.http_proxy))
-              - https_proxy: ((vars.https_proxy))
-              - no_proxy: ((vars.no_proxy))
-              - PKR_VAR_http_proxy: ((vars.http_proxy))
-              - PKR_VAR_https_proxy: ((vars.https_proxy))
-              - PKR_VAR_no_proxy: ((vars.no_proxy))
-              - PKR_VAR_iso_url: "((vars.minio_endpoint_data))/images/packer/debian/debian-11.6-amd64.qcow2"
-              - PKR_VAR_iso_checksum: "file:((vars.minio_endpoint_data))/images/packer/debian/debian-11.6-amd64.sha256"
-              - PKR_VAR_build_directory: "/output/((.:git_ref))"
-
-      - put: r-salt
-        params:
-          tgt: "I@tags:imagebuilder and I@tags:hypervisor-kvm"
-          tgt_type: compound
-          fun: state.single
-          args:
-            - cmd.run
-            - "queue=True"
-          kwargs:
-            name: |
-                set -e
-                mkdir -p "./${PKR_VAR_build_directory}"
-                ./packer-templates/main.sh list
-                ./packer-templates/main.sh cat "${PKR_VAR_build_directory}/cloud" | tar -xf - -C "./${PKR_VAR_build_directory}"
-                ls -lR "./${PKR_VAR_build_directory}"
-                mc cp --recursive "./${PKR_VAR_build_directory}/cloud" data/images/packer/
-            shell: /bin/bash
-            cwd: /data/tmp
-            env:
-              - MC_HOST_data: "https://((minio/packer-templates.access_key)):((minio/packer-templates.secret_key))@((vars.minio_host_data))"
-              - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
-              - http_proxy: ((vars.http_proxy))
-              - https_proxy: ((vars.https_proxy))
-              - no_proxy: ((vars.no_proxy))
-              - PKR_VAR_http_proxy: ((vars.http_proxy))
-              - PKR_VAR_https_proxy: ((vars.https_proxy))
-              - PKR_VAR_no_proxy: ((vars.no_proxy))
-              - PKR_VAR_build_directory: "/output/((.:git_ref))"
+{% endfor %}
+{% endfor %}
 
 
   - name: j-prepare-environment
