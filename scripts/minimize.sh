@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -eux
-# case "$PACKER_BUILDER_TYPE" in
-  # qemu) exit 0 ;;
-# esac
+
+
+# Check which modules get loaded (plug in all necessary hardware first so that all drivers get loaded),
+# and then remove all kernel modules from /lib/modules/version which are not listed in lsmod.
+# blacklist modules as kernel parameter: 'module_name.blacklist=yes'
+lsmod
+# find /usr/lib/modules
 
 while read mountp; do
   cat /dev/zero | dd of=${mountp}/EMPTY || true
