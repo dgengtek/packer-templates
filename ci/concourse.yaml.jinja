@@ -208,6 +208,7 @@ jobs:
               - PKR_VAR_vault_addr: ((vars.vault_addr))
               - PKR_VAR_vault_pki_secrets_path: ((vars.vault_pki_path))
               - PKR_VAR_build_directory: "/output/((.:git_ref))"
+              - PKR_VAR_ssh_timeout: "((ssh_timeout))"
               {% if iso_path %}
               - PKR_VAR_iso_url: "((vars.minio_endpoint_data))/images/packer/{{iso_path}}.qcow2"
               - PKR_VAR_iso_checksum: "file:((vars.minio_endpoint_data))/images/packer/{{iso_path}}.sha256"

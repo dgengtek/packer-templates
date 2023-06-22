@@ -63,6 +63,11 @@ variable "no_proxy" {
   default = ""
 }
 
+variable "ssh_timeout" {
+  type    = string
+  default = "30m"
+}
+
 variable "build_directory" {
   type    = string
   default = "output"
@@ -101,7 +106,7 @@ source "qemu" "main" {
   shutdown_command = "sudo systemctl poweroff"
   ssh_username     = "provision"
   ssh_password     = "provision"
-  ssh_timeout      = "30m"
+  ssh_timeout      = "${var.ssh_timeout}"
   vm_name          = "${var.distribution}.qcow2"
   http_content     = try(local.v.http_content, {})
 }
