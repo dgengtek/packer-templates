@@ -15,8 +15,14 @@ build {
   }
 
   provisioner "shell" {
-    environment_vars = ["SALT_VERSION_TAG=${var.salt_version_tag}", "SALT_GIT_URL=${var.salt_git_url}", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
     execute_command  = "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'"
+    environment_vars = [
+      "http_proxy=${var.http_proxy}",
+      "https_proxy=${var.https_proxy}",
+      "no_proxy=${var.no_proxy}",
+      "SALT_VERSION_TAG=${var.salt_version_tag}",
+      "SALT_GIT_URL=${var.salt_git_url}"
+    ]
     scripts          = ["scripts/network_wait.sh", "scripts/${local.os_name}/install_salt.sh", "scripts/install_salt.sh", "scripts/${local.os_name}/cleanup.sh", "scripts/cleanup_host.sh", "scripts/cleanup_logs.sh", "scripts/minimize.sh"]
   }
 

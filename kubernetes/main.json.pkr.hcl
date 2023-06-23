@@ -14,6 +14,11 @@ build {
 
   provisioner "shell" {
     execute_command = "sudo bash -c '{{ .Path }}'"
+    environment_vars = [
+      "http_proxy=${var.http_proxy}",
+      "https_proxy=${var.https_proxy}",
+      "no_proxy=${var.no_proxy}",
+    ]
     scripts         = ["scripts/network_wait.sh", "scripts/add_root_keys.sh", "scripts/${local.os_name}/setup_ansible.sh"]
   }
 
