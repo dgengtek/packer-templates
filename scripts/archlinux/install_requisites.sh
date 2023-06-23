@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eux
-pacman -Syu --noconfirm sudo parted systemd-resolved
+pacman -Syu --noconfirm sudo parted
 
 sudo systemctl unmask systemd-resolved
 sudo systemctl enable --now systemd-resolved
