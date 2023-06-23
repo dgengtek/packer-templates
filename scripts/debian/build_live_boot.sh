@@ -2,6 +2,7 @@
 # https://github.com/hashicorp/packer/issues/955
 set -ex
 
+apt-get update
 apt-get -y install squashfs-tools live-boot
 update-initramfs -uv
 
