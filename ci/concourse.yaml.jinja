@@ -221,6 +221,9 @@ jobs:
               - PKR_VAR_iso_url: "((vars.minio_endpoint_data))/images/packer/{{iso_path}}.qcow2"
               - PKR_VAR_iso_checksum: "file:((vars.minio_endpoint_data))/images/packer/{{iso_path}}.sha256"
               {% endif %}
+              {% for k,v in build_config.get(os.name, {}).get("env", {}).items() %}
+              - {{k}}: "{{v}}"
+              {% endfor %}
 
       - put: r-salt
         params:

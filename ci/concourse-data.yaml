@@ -8,6 +8,9 @@ builds:
   base:
     command: "base"
     passed_build: ""
+    archlinux:
+      env:
+        PKR_VAR_boot_wait: 30s
   cloud:
     command: "cloud"
     passed_build: base
