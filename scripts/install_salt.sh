@@ -3,7 +3,8 @@ set -ex
 
 [ -n "$SALT_VERSION_TAG" ]
 [ -n "$SALT_GIT_URL" ]
-readonly path_venv=/root/venv
+mkdir -p /opt
+readonly path_venv=/opt/venv
 readonly path_salt_bin=/usr/local/bin
 
 curl -o bootstrap-salt.sh -L https://bootstrap.saltproject.io
@@ -51,3 +52,8 @@ for bin in salt-api salt-call salt-cloud salt-cp salt-key salt-master salt-minio
 done
 systemctl enable salt-minion.service
 rm -f /etc/salt/minion_id
+# check that salt is available
+salt-call --version
+salt-minion --version
+sudo -u provision salt-call --version
+sudo -u provision salt-minion --version
