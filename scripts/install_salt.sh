@@ -3,6 +3,8 @@ set -ex
 
 [ -n "$SALT_VERSION_TAG" ]
 [ -n "$SALT_GIT_URL" ]
+readonly path_venv=/root/venv
+readonly path_salt_bin=/usr/local/bin
 
 curl -o bootstrap-salt.sh -L https://bootstrap.saltproject.io
 
@@ -26,8 +28,8 @@ EOF
 
 systemctl mask salt-minion.service
 
-python3 -m venv /root/venv
-source /root/venv/bin/activate
+python3 -m venv "$path_venv"
+source "$path_venv/bin/activate"
 pip install --upgrade pip setuptools wheel pyyaml
 bash bootstrap-salt.sh \
   -dX \
@@ -41,8 +43,11 @@ bash bootstrap-salt.sh \
 
 systemctl unmask salt-minion.service
 # redirecting creates a mask? need to copy in two steps
-systemctl cat salt-minion.service | sed 's,^ExecStart=.*,ExecStart=/root/venv/bin/salt-minion,' > salt-minion.service
+systemctl cat salt-minion.service | sed "s,^ExecStart=.*,ExecStart=$path_salt_bin/salt-minion," > salt-minion.service
 cp -fv salt-minion.service /etc/systemd/system/
 rm salt-minion.service
+for bin in salt-api salt-call salt-cloud salt-cp salt-key salt-master salt-minion salt-pip salt-proxy salt-run salt-ssh; do
+  ln -s "$path_venv/bin/$bin" "$path_salt_bin/$bin"
+done
 systemctl enable salt-minion.service
 rm -f /etc/salt/minion_id
