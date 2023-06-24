@@ -6,11 +6,29 @@ set -ex
 
 curl -o bootstrap-salt.sh -L https://bootstrap.saltproject.io
 
+# TODO: remove patch when fixed in upstream
+# apply patch for saltstack venv install specifically for archlinux
+patch --verbose bootstrap-salt.sh << 'EOF'
+@@ -2880,9 +2880,8 @@
+     echoinfo "Installing Built Salt Wheel"
+     ${_pip_cmd} uninstall --yes salt 2>/dev/null || true
+     echodebug "Running '${_pip_cmd} install --no-deps --force-reinstall ${_POST_NEON_PIP_INSTALL_ARGS} /tmp/git/deps/salt*.whl'"
+-    ${_pip_cmd} install --no-deps --force-reinstall \
+-        ${_POST_NEON_PIP_INSTALL_ARGS} \
+-        --global-option="--salt-config-dir=$_SALT_ETC_DIR --salt-cache-dir=${_SALT_CACHE_DIR} ${SETUP_PY_INSTALL_ARGS}" \
++    ${_pip_cmd} install --force-reinstall \
++        --config-settings="--salt-config-dir=$_SALT_ETC_DIR --salt-cache-dir=${_SALT_CACHE_DIR} ${SETUP_PY_INSTALL_ARGS}" \
+         /tmp/git/deps/salt*.whl || return 1
+
+     echoinfo "Checking if Salt can be imported using ${_py_exe}"
+EOF
+
+
 systemctl mask salt-minion.service
 
 python3 -m venv /root/venv
 source /root/venv/bin/activate
-pip install pyyaml
+pip install --upgrade pip setuptools wheel pyyaml
 bash bootstrap-salt.sh \
   -dX \
   -x python3 \

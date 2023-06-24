@@ -1,3 +1,3 @@
 #!/bin/sh
 set -eux
-pacman -Syu --noconfirm curl base-devel
+pacman -Syu --noconfirm curl base-devel python
