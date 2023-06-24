@@ -56,8 +56,11 @@ pacman-key --populate archlinux
 # remove quiet boot
 sed -i 's,GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet",GRUB_CMDLINE_LINUX_DEFAULT="",' "${TARGET_DIR}/etc/default/grub"
 
-# add hooks for systemd lvm boot
+sed -i 's,^MODULES,# HOOKS,' "${TARGET_DIR}/etc/mkinitcpio.conf"
 sed -i 's,^HOOKS,# HOOKS,' "${TARGET_DIR}/etc/mkinitcpio.conf"
+# add required virtio modules so arch can boot from a virtio device
+echo "MODULES=(virtio virtio_blk virtio_pci virtio_scsi virtio_net)" >> "${TARGET_DIR}/etc/mkinitcpio.conf"
+# add hooks for systemd lvm boot
 echo "HOOKS=(base systemd udev autodetect modconf block lvm2 filesystems keyboard fsck)" >> "${TARGET_DIR}/etc/mkinitcpio.conf"
 
 /usr/bin/arch-chroot ${TARGET_DIR} grub-install ${DISK}
