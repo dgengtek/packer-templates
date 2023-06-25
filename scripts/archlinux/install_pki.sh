@@ -11,7 +11,7 @@ if [[ "$ENABLE_PKI_INSTALL" == 0 ]] \
 fi
 
 cd /etc/ca-certificates/trust-source/anchors
-curl --insecure ${VAULT_ADDR}/v1/${VAULT_PKI_SECRETS_PATH}/ca_chain \
-  | awk 'split_after == 1 {n++;split_after=0} /-----END CERTIFICATE-----/ {split_after=1} {print > "intranet-" n ".crt"}'
+curl --insecure "${VAULT_ADDR}/v1/${VAULT_PKI_SECRETS_PATH}/ca_chain" \
+  | awk 'split_after == 1 {n++;split_after=0} /-----END CERTIFICATE-----/ {split_after=1} {print > "intranet-" n+1 ".crt"}'
 
 update-ca-trust extract

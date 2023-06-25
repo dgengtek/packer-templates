@@ -29,6 +29,7 @@ declare image_name=$DOCKER_IMAGE_NAME
 readonly sanitized_image_name=${DOCKER_IMAGE_NAME%:*}
 [[ -n ${DOCKER_REGISTRY:-""} ]] && image_name="${DOCKER_REGISTRY}/${image_name}"
 readonly PKR_VAR_build_directory=${PKR_VAR_build_directory:-/output}
+readonly PKR_VAR_vault_addr=${PKR_VAR_vault_addr:-${VAULT_ADDR:-http://vault:8200}}
 
 
 usage() {
@@ -357,8 +358,8 @@ _packer() {  # run packer in BUILD_DIRECTORY
   __add_env_var PACKER_CACHE_DIR
   sudo docker run \
     --env PKR_VAR_enable_pki_install="${PKR_VAR_enable_pki_install:-false}" \
-    --env PKR_VAR_vault_addr="${VAULT_ADDR:-https://vault:8200}" \
-    --env PKR_VAR_vault_pki_secrets_path="${VAULT_PKI_SECRETS_PATH:-pki}" \
+    --env PKR_VAR_vault_addr="${PKR_VAR_vault_addr:-https://vault:8200}" \
+    --env PKR_VAR_vault_pki_secrets_path="${PKR_VAR_vault_pki_secrets_path:-pki}" \
     --device=/dev/kvm \
     --mount type=bind,source=${PWD},target=/wd/,readonly \
     --mount source="${sanitized_image_name}_images",target=$volume_mountpoint \
