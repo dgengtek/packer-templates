@@ -3,7 +3,7 @@ build {
 
   provisioner "shell" {
     environment_vars = ["DEV_DISK=/dev/vda", "DEV_PARTITION_NR=3"]
-    execute_command  = "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'"
+    execute_command  = "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'"
     scripts          = ["scripts/disk_resize.sh"]
   }
 

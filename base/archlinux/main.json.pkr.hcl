@@ -3,7 +3,7 @@ build {
 
   provisioner "shell" {
     environment_vars  = ["http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
-    execute_command   = "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'"
+    execute_command   = "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'"
     expect_disconnect = true
     only              = ["qemu.main"]
     scripts           = ["scripts/archlinux/install.sh"]
@@ -24,7 +24,7 @@ build {
       "VAULT_ADDR=${var.vault_addr}",
       "VAULT_PKI_SECRETS_PATH=${var.vault_pki_secrets_path}"
     ]
-    execute_command = "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'"
+    execute_command = "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'"
     scripts         = ["scripts/install_systemd-networkd.sh", "scripts/network_wait.sh", "scripts/archlinux/install_requisites.sh", "scripts/archlinux/install_pki.sh", "srv/enable_ssh.sh", "scripts/archlinux/cleanup.sh", "scripts/cleanup_host.sh", "scripts/cleanup_logs.sh", "scripts/minimize.sh"]
   }
 

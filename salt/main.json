@@ -30,7 +30,7 @@
     {
       "type": "shell",
       "only": ["qemu"],
-      "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "execute_command": "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'",
       "environment_vars": [
         "DEV_DISK=/dev/vda",
         "DEV_PARTITION_NR=3"
@@ -50,7 +50,7 @@
     },
     {
       "type": "shell",
-      "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "execute_command": "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'",
       "environment_vars": [
         "SALT_VERSION_TAG={{user `SALT_VERSION_TAG`}}",
         "SALT_GIT_URL={{user `SALT_GIT_URL`}}",

@@ -69,7 +69,7 @@
     },
     {
       "type": "shell",
-      "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "execute_command": "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'",
       "environment_vars": [
         "ENABLE_PKI_INSTALL={{user `enable_pki_install`}}",
         "VAULT_ADDR={{user `vault_addr`}}",

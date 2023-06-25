@@ -30,7 +30,7 @@
     {
       "type": "shell",
       "only": ["qemu"],
-      "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "execute_command": "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'",
       "environment_vars": [
         "DEV_DISK=/dev/vda",
         "DEV_PARTITION_NR=3"
@@ -51,7 +51,7 @@
     },
     {
       "type": "shell",
-      "execute_command": "{{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "execute_command": "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'",
       "environment_vars": [
       ],
       "scripts": [
