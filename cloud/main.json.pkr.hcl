@@ -2,7 +2,7 @@ build {
   sources = ["source.qemu.main"]
 
   provisioner "shell" {
-    execute_command = "sudo bash -c '{{ .Path }}'"
+    execute_command = "sudo -nE bash -c '{{ .Path }}'"
     environment_vars = [
       "http_proxy=${var.http_proxy}",
       "https_proxy=${var.https_proxy}",
