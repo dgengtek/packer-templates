@@ -26,7 +26,21 @@ build {
       "VAULT_PKI_SECRETS_PATH=${var.vault_pki_secrets_path}"
     ]
     execute_command  = "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'"
-    scripts          = ["scripts/${local.os_name}/uninstall_network.sh", "scripts/${local.os_name}/fix_systemd_networkd.sh", "scripts/install_systemd-networkd.sh", "scripts/network_wait.sh", "scripts/${local.os_name}/install_requisites.sh", "scripts/${local.os_name}/install_pki.sh", "srv/enable_ssh.sh", "scripts/${local.os_name}/cleanup.sh", "scripts/cleanup_host.sh", "scripts/cleanup_logs.sh", "scripts/minimize.sh"]
+    scripts          = [
+      "scripts/configure_environment.sh",
+      "scripts/${local.os_name}/configure_proxy.sh",
+      "scripts/${local.os_name}/uninstall_network.sh",
+      "scripts/${local.os_name}/fix_systemd_networkd.sh",
+      "scripts/install_systemd-networkd.sh",
+      "scripts/network_wait.sh",
+      "scripts/${local.os_name}/install_requisites.sh",
+      "scripts/${local.os_name}/install_pki.sh",
+      "srv/enable_ssh.sh",
+      "scripts/${local.os_name}/cleanup.sh",
+      "scripts/cleanup_host.sh",
+      "scripts/cleanup_logs.sh",
+      "scripts/minimize.sh"
+    ]
   }
 
   post-processor "checksum" {

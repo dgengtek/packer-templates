@@ -47,11 +47,13 @@ for mountp in var home tmp; do
   /usr/bin/mount -o noatime /dev/mapper/${ROOT_VG}-lv_${mountp} "${TARGET_DIR}/${mountp}"
 done
 
-curl -s "$MIRRORLIST" |  sed 's/^#Server/Server/' > /etc/pacman.d/mirrorlist
 
 pacman-key --init
 pacman-key --populate archlinux
 /usr/bin/pacstrap ${TARGET_DIR} base base-devel linux openssh grub gptfdisk rng-tools lvm2
+
+pacman -Sy --noconfirm pacman-contrib
+curl -s "$MIRRORLIST" |  sed -e 's/^#Server/Server/' -e '/^#/d' | rankmirrors -n 5 - > "${TARGET_DIR}/etc/pacman.d/mirrorlist"
 
 # remove quiet boot
 sed -i 's,GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet",GRUB_CMDLINE_LINUX_DEFAULT="",' "${TARGET_DIR}/etc/default/grub"
