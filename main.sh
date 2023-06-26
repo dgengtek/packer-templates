@@ -287,6 +287,7 @@ _docker() {  # build docker image with dependencies required for build
 
 _sh() {  # run interactive bash shell in container
   sudo docker run \
+    --init \
     --device=/dev/kvm \
     --mount source="${sanitized_image_name}_images",target=$volume_mountpoint \
     --mount source="${sanitized_image_name}_cache",target=${PACKER_CACHE_DIR} \
@@ -296,6 +297,7 @@ _sh() {  # run interactive bash shell in container
 
 _run() {  # run in container
   sudo docker run \
+    --init \
     --device=/dev/kvm \
     --mount source="${sanitized_image_name}_images",target=$volume_mountpoint \
     --mount source="${sanitized_image_name}_cache",target=${PACKER_CACHE_DIR} \
@@ -305,6 +307,7 @@ _run() {  # run in container
 
 _list() {  # show content of output directory containing the built images
   sudo docker run \
+    --init \
     --device=/dev/kvm \
     --mount source="${sanitized_image_name}_images",target=$volume_mountpoint \
     --rm -i "$image_name" -c "fd -a -t f . $volume_mountpoint | xargs ls -l"
@@ -315,6 +318,7 @@ _cat() {  # output a file from the given path to stdout as a tar archive
   local filename=${1:?Filename required}
 
   local cid=$(sudo docker run -d \
+    --init \
     --mount source="${sanitized_image_name}_images",target=$volume_mountpoint \
     $image_name true)
   sudo docker cp ${cid}:$filename -
@@ -357,6 +361,7 @@ _packer() {  # run packer in BUILD_DIRECTORY
   __add_env_var PKR_VAR_ssh_timeout
   __add_env_var PACKER_CACHE_DIR
   sudo docker run \
+    --init \
     --env PKR_VAR_enable_pki_install="${PKR_VAR_enable_pki_install:-false}" \
     --env PKR_VAR_vault_addr="${PKR_VAR_vault_addr:-https://vault:8200}" \
     --env PKR_VAR_vault_pki_secrets_path="${PKR_VAR_vault_pki_secrets_path:-pki}" \
