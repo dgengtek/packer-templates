@@ -360,6 +360,8 @@ _packer() {  # run packer in BUILD_DIRECTORY
   __add_env_var PKR_VAR_boot_wait
   __add_env_var PKR_VAR_ssh_timeout
   __add_env_var PACKER_CACHE_DIR
+  __add_env_var PKR_VAR_efi_firmware_code
+  __add_env_var PKR_VAR_efi_firmware_vars
   sudo docker run \
     --init \
     --env PKR_VAR_enable_pki_install="${PKR_VAR_enable_pki_install:-false}" \
