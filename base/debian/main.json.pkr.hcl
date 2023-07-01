@@ -54,12 +54,29 @@ locals {
   v = {
     build_type = ""
     output_directory = "${var.build_directory}/${local.os_name}"
-    boot_command     = ["<esc><wait>", "install", " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg", " debian-installer=en_US", " auto", " locale=en_US", " kbd-chooser/method=de", " keyboard-configuration/xkb-keymap=de", " netcfg/get_hostname=packer-debian", " netcfg/get_domain=lan", " fb=false", " debconf/frontend=noninteractive", " console-setup/ask_detect=false", " console-keymaps-at/keymap=de", "<enter>"]
+    boot_command     = [
+      "%{if local.efi_boot_enabled}<esc><wait>e<down><down><down><end>%{else}<esc><wait>%{endif}",
+      "install",
+      " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg",
+      " debian-installer=en_US",
+      " auto",
+      " locale=en_US",
+      " kbd-chooser/method=de",
+      " keyboard-configuration/xkb-keymap=de",
+      " netcfg/get_hostname=packer-debian",
+      " netcfg/get_domain=lan",
+      " fb=false",
+      " debconf/frontend=noninteractive",
+      " console-setup/ask_detect=false",
+      " console-keymaps-at/keymap=de",
+      "%{if local.efi_boot_enabled}<f10>%{else}<enter>%{endif}"
+    ]
     disk_image = false
 
     http_content            = {
       "/preseed.cfg" = templatefile("${path.cwd}/srv/debian/preseed.pkrtpl", {
         http_proxy = var.http_proxy
+        efi_boot_enabled = local.efi_boot_enabled
       })
     }
 
