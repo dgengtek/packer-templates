@@ -94,10 +94,13 @@ variable "output_directory" {
 
 
 locals {
+  efi_boot_enabled = var.efi_firmware_code != "" && var.efi_firmware_vars != ""
   os_name = split("-", var.distribution)[0]
   output_directory = var.output_directory != "" ? var.output_directory : local.v.build_type != "" ? "${var.build_directory}/${local.v.build_type}/${local.os_name}" : "${var.build_directory}/${local.os_name}"
 }
 
+
+# https://developer.hashicorp.com/packer/plugins/builders/qemu
 source "qemu" "main" {
   accelerator      = "kvm"
   boot_command     = try(local.v.boot_command, [])
