@@ -2,7 +2,12 @@ build {
   sources = ["source.qemu.main"]
 
   provisioner "shell" {
-    environment_vars  = ["http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
+    environment_vars  = [
+      "http_proxy=${var.http_proxy}",
+      "https_proxy=${var.https_proxy}",
+      "no_proxy=${var.no_proxy}",
+      "efi_boot_enabled=${local.efi_boot_enabled}"
+    ]
     execute_command   = "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'"
     expect_disconnect = true
     only              = ["qemu.main"]

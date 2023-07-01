@@ -17,6 +17,18 @@ variable "boot_wait" {
   default = "10s"
 }
 
+variable "efi_firmware_code" {
+  type    = string
+  description = "Path to the CODE part of OVMF (or other compatible firmwares) "
+  default = ""
+}
+
+variable "efi_firmware_vars" {
+  type    = string
+  description = "Path to the VARS corresponding to the OVMF code file."
+  default = ""
+}
+
 variable "enable_pki_install" {
   type    = bool
   default = false
@@ -109,4 +121,6 @@ source "qemu" "main" {
   ssh_timeout      = "${var.ssh_timeout}"
   vm_name          = "${var.distribution}.qcow2"
   http_content     = try(local.v.http_content, {})
+  efi_firmware_code = "${var.efi_firmware_code}"
+  efi_firmware_vars = "${var.efi_firmware_vars}"
 }
