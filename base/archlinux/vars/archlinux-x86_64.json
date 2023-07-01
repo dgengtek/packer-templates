@@ -1,4 +1,4 @@
 {
-  "iso_url": "https://mirrors.kernel.org/archlinux/iso/{{isotime \"2006.01\"}}.01/archlinux-x86_64.iso",
-  "iso_checksum": "file:https://mirrors.kernel.org/archlinux/iso/{{isotime \"2006.01\"}}.01/sha256sums.txt"
+  "iso_url": "https://mirrors.kernel.org/archlinux/iso/latest/archlinux-x86_64.iso",
+  "iso_checksum": "file:https://mirrors.kernel.org/archlinux/iso/latest/sha256sums.txt"
 }
