@@ -92,11 +92,15 @@ variable "output_directory" {
   description = "override build directory to set an absolute path where an image will be outputted to"
 }
 
-
 locals {
   efi_boot_enabled = var.efi_firmware_code != "" && var.efi_firmware_vars != ""
   os_name = split("-", var.distribution)[0]
-  output_directory = var.output_directory != "" ? var.output_directory : local.v.build_type != "" ? "${var.build_directory}/${local.v.build_type}/${local.os_name}" : "${var.build_directory}/${local.os_name}"
+  boot_type = local.efi_boot_enabled ? "efi" : "bios"
+  os_boot_type = "${local.os_name}-${local.boot_type}"
+  output_directory = var.output_directory != "" ? var.output_directory : local.v.build_type != "" ? "${var.build_directory}/${local.v.build_type}/${local.os_boot_type}" : "${var.build_directory}/${local.os_boot_type}"
+  vm_name = join("", [
+    "${var.distribution}",
+  ])
 }
 
 
@@ -122,7 +126,7 @@ source "qemu" "main" {
   ssh_username     = "provision"
   ssh_password     = "provision"
   ssh_timeout      = "${var.ssh_timeout}"
-  vm_name          = "${var.distribution}.qcow2"
+  vm_name          = "${local.vm_name}.qcow2"
   http_content     = try(local.v.http_content, {})
   efi_firmware_code = "${var.efi_firmware_code}"
   efi_firmware_vars = "${var.efi_firmware_vars}"

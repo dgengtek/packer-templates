@@ -28,12 +28,12 @@ build {
 
   post-processor "checksum" {
     checksum_types = ["sha256"]
-    output = "${local.output_directory}/${var.distribution}.sha256"
+    output = "${local.output_directory}/${local.vm_name}.sha256"
     keep_input_artifact = true
   }
 
   post-processor "shell-local" {
-    inline = ["set -eux", "scripts/qemu/convert_raw.sh \"${local.output_directory}\" \"${var.distribution}\""]
+    inline = ["set -eux", "scripts/qemu/convert_raw.sh \"${local.output_directory}\" \"${local.vm_name}\""]
     only   = ["qemu.main"]
   }
 }
@@ -43,8 +43,8 @@ locals {
   v = {
     raise_error_undefined_parent_image = var.parent_image_type == "none" ? (var.iso_url == "" ? file("ERROR: a custom iso_url is required if parent_image_type is not set otherwise set a parent_image_type from the allowed default list: cloud, kitchen, debian") : null) : null
     build_type = var.parent_image_type == "" ? "salt" : "salt/${var.parent_image_type}"
-    iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${var.parent_image_type}/${local.os_name}/${var.distribution}.qcow2"
-    iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${var.parent_image_type}/${local.os_name}/${var.distribution}.sha256"
+    iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${var.parent_image_type}/${local.os_boot_type}/${local.vm_name}.qcow2"
+    iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${var.parent_image_type}/${local.os_boot_type}/${local.vm_name}.sha256"
   }
 }
 

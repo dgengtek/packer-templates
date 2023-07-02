@@ -31,21 +31,21 @@ build {
   }
 
   provisioner "file" {
-    destination = "${local.output_directory}/${var.distribution}.vmlinuz"
+    destination = "${local.output_directory}/${local.vm_name}.vmlinuz"
     direction   = "download"
     only        = ["qemu.main"]
     sources     = ["/squashfs/vmlinuz"]
   }
 
   provisioner "file" {
-    destination = "${local.output_directory}/${var.distribution}.initrd"
+    destination = "${local.output_directory}/${local.vm_name}.initrd"
     direction   = "download"
     only        = ["qemu.main"]
     sources     = ["/squashfs/initrd.img"]
   }
 
   provisioner "file" {
-    destination = "${local.output_directory}/${var.distribution}.squashfs"
+    destination = "${local.output_directory}/${local.vm_name}.squashfs"
     direction   = "download"
     only        = ["qemu.main"]
     sources     = ["/squashfs/filesystem.squashfs"]
@@ -59,7 +59,7 @@ build {
 
   post-processor "checksum" {
     checksum_types = ["sha256"]
-    output = "${local.output_directory}/${var.distribution}.sha256"
+    output = "${local.output_directory}/${local.vm_name}.sha256"
     keep_input_artifact = true
   }
 }
@@ -67,8 +67,8 @@ build {
 locals {
   v = {
     build_type = "terminal"
-    iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${local.os_name}/${var.distribution}.qcow2"
-    iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${local.os_name}/${var.distribution}.sha256"
+    iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${local.os_boot_type}/${local.vm_name}.qcow2"
+    iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${local.os_boot_type}/${local.vm_name}.sha256"
   }
 }
 
