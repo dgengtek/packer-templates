@@ -33,6 +33,7 @@ build {
       "scripts/${local.os_name}/fix_systemd_networkd.sh",
       "scripts/install_systemd-networkd.sh",
       "scripts/network_wait.sh",
+      "scripts/${local.os_name}/setup_sb_uki.sh",
       "scripts/${local.os_name}/install_requisites.sh",
       "scripts/${local.os_name}/install_pki.sh",
       "srv/enable_ssh.sh",

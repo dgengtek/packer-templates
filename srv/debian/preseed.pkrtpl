@@ -230,7 +230,7 @@ d-i partman-auto/choose_recipe select dgops_partition
 d-i partman-auto/expert_recipe string \
   dgops_partition :: \
 %{ if efi_boot_enabled  }
-    573 100000 573 fat32 \
+    40 100000 40 fat32 \
       $iflabel{ gpt } \
       $reusemethod{ } \
       method{ efi } \
