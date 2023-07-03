@@ -93,7 +93,8 @@ variable "output_directory" {
 }
 
 locals {
-  efi_boot_enabled = var.efi_firmware_code != "" && var.efi_firmware_vars != ""
+  efi_boot_enabled = var.efi_firmware_code != ""
+  raise_efi_error = local.efi_boot_enabled ? (local.v.efi_firmware_vars == "" ? file("ERROR: efi_firmware_vars is unset. Provide a default value") : null) : null
   os_name = split("-", var.distribution)[0]
   boot_type = local.efi_boot_enabled ? "efi" : "bios"
   os_boot_type = "${local.os_name}-${local.boot_type}"
@@ -129,5 +130,5 @@ source "qemu" "main" {
   vm_name          = "${local.vm_name}.qcow2"
   http_content     = try(local.v.http_content, {})
   efi_firmware_code = "${var.efi_firmware_code}"
-  efi_firmware_vars = "${var.efi_firmware_vars}"
+  efi_firmware_vars = local.efi_boot_enabled ? local.v.efi_firmware_vars : ""
 }

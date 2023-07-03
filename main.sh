@@ -19,6 +19,7 @@ declare -i enable_verbose=0
 declare -i enable_quiet=0
 declare -i enable_debug=0
 declare -i enable_system_log=0
+declare -i enable_uefi=0
 readonly __script_name="${BASH_SOURCE[0]##*/}"
 readonly DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME:-$(basename $(dirname $(realpath -e "$0")))}
 readonly DOCKER_REGISTRY=${DOCKER_REGISTRY:-""}
@@ -50,6 +51,7 @@ OPTIONS:
   -v  verbose
   -q  quiet
   -d  debug
+  --uefi  boot and build images with uefi(uses ovmf from docker image)
 EOF
 }
 
@@ -165,6 +167,9 @@ parse_options() {
         ;;
       --enable-log)
         enable_system_log=1
+        ;;
+      --uefi)
+        enable_uefi=1
         ;;
       --)
         do_shift=3
@@ -360,8 +365,21 @@ _packer() {  # run packer in BUILD_DIRECTORY
   __add_env_var PKR_VAR_boot_wait
   __add_env_var PKR_VAR_ssh_timeout
   __add_env_var PACKER_CACHE_DIR
-  __add_env_var PKR_VAR_efi_firmware_code
-  __add_env_var PKR_VAR_efi_firmware_vars
+
+  if (($enable_uefi)); then
+    # use the OVMF from the image
+    if [[ -z ${PKR_VAR_efi_firmware_code:-""} ]]; then
+      PKR_VAR_efi_firmware_code="/usr/share/OVMF/OVMF_CODE.fd"
+    else
+      args+=(--mount type=bind,source=$PKR_VAR_efi_firmware_code,target=/wd/OVMF_CODE.fd,readonly)
+    fi
+    if [[ -n ${PKR_VAR_efi_firmware_vars:-""} ]]; then
+      args+=(--mount type=bind,source=$PKR_VAR_efi_firmware_vars,target=/wd/OVMF_VARS.fd,readonly)
+    fi
+    __add_env_var PKR_VAR_efi_firmware_code
+    __add_env_var PKR_VAR_efi_firmware_vars
+  fi
+
   sudo docker run \
     --init \
     --env PKR_VAR_enable_pki_install="${PKR_VAR_enable_pki_install:-false}" \

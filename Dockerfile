@@ -13,12 +13,15 @@ RUN apt-get update \
 FROM ${dockerfile_from_image} as build
 
 ENV BUILD_DIRECTORY=/output
+ENV efi_firmware_code=/usr/share/OVMF/OVMF_CODE.fd
+ENV efi_firmware_vars=/usr/share/OVMF/OVMF_VARS.fd
 
 COPY --from=0 /packer /bin/packer
 COPY --from=0 /fd /bin/fd
 RUN apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y qemu-system-x86 qemu-utils fzf git ansible jq \
-  && mkdir /output /wd
+  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y qemu-system-x86 qemu-utils ovmf fzf git ansible jq \
+  && mkdir $BUILD_DIRECTORY
+
 
 WORKDIR /wd
 
