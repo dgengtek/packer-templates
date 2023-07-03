@@ -43,10 +43,9 @@ mkdir /efi
 apt-get install -y efibootmgr systemd-boot systemd-boot-efi
 
 # bootctl install --esp-path=/efi
-efibootmgr -q -b 0 -B
-efibootmgr -q -b 1 -B
-efibootmgr -q -b 5 -B
-efibootmgr -q -b 6 -B
+while read entry; do
+  efibootmgr -q -b $entry -B
+done < <(efibootmgr -v | grep -v -i -e systemd -e pxe | sed -n 's,Boot\([0-9a-z]\{4\}\)\*.*,\1,p')
 
 # uki not supported with kernel-install by debian 12
 # echo "layout=uki" >> /etc/kernel/install.conf

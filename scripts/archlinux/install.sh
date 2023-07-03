@@ -96,10 +96,10 @@ echo "HOOKS=(base systemd udev autodetect modconf block lvm2 filesystems keyboar
 
 if [[ $efi_boot_enabled == "true" ]]; then
   /usr/bin/arch-chroot ${TARGET_DIR} bootctl install --esp-path=/efi
-  /usr/bin/arch-chroot ${TARGET_DIR} efibootmgr -b 0 -B
-  /usr/bin/arch-chroot ${TARGET_DIR} efibootmgr -b 1 -B
-  /usr/bin/arch-chroot ${TARGET_DIR} efibootmgr -b 2 -B
-  /usr/bin/arch-chroot ${TARGET_DIR} efibootmgr -v
+  # cleanup entries
+  while read entry; do
+    /usr/bin/arch-chroot ${TARGET_DIR} efibootmgr -q -b $entry -B
+  done < <(/usr/bin/arch-chroot ${TARGET_DIR} efibootmgr -v | grep -v -i -e systemd -e pxe | sed -n 's,Boot\([0-9a-z]\{4\}\)\*.*,\1,p')
 
   echo "layout=uki" >> /etc/kernel/install.conf
   cat > ${TARGET_DIR}/etc/kernel/cmdline << EOF
