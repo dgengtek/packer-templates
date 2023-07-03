@@ -5,24 +5,52 @@ config:
     distribution: archlinux-x86_64
 
 builds:
-  base:
+  base-bios:
     command: "base"
     passed_build: ""
     archlinux:
       env:
         PKR_VAR_boot_wait: 30s
-  cloud:
+  cloud-bios:
     command: "cloud"
-    passed_build: base
-  kitchen:
+    passed_build: base-bios
+  kitchen-bios:
     command: "kitchen"
-    passed_build: base
-  terminal:
+    passed_build: base-bios
+  terminal-bios:
     command: "terminal"
-    passed_build: base
-  salt-cloud:
+    passed_build: base-bios
+  salt-cloud-bios:
     command: "salt cloud"
-    passed_build: cloud
-  salt-kitchen:
+    passed_build: cloud-bios
+  salt-kitchen-bios:
     command: "salt kitchen"
-    passed_build: kitchen
+    passed_build: kitchen-bios
+
+  base-uefi:
+    command_main: "main.sh --uefi"
+    command: "base"
+    passed_build: ""
+    archlinux:
+      env:
+        PKR_VAR_boot_wait: 30s
+  cloud-uefi:
+    command_main: "main.sh --uefi"
+    command: "cloud"
+    passed_build: base-uefi
+  kitchen-uefi:
+    command_main: "main.sh --uefi"
+    command: "kitchen"
+    passed_build: base-uefi
+  terminal-uefi:
+    command_main: "main.sh --uefi"
+    command: "terminal"
+    passed_build: base-uefi
+  salt-cloud-uefi:
+    command_main: "main.sh --uefi"
+    command: "salt cloud"
+    passed_build: cloud-uefi
+  salt-kitchen-uefi:
+    command_main: "main.sh --uefi"
+    command: "salt kitchen"
+    passed_build: kitchen-uefi

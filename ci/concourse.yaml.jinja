@@ -197,7 +197,7 @@ jobs:
           fun: state.single
           args:
             - cmd.run
-            - "./main.sh {{os.name}} {{build_config.command}}"
+            - "./{{build_config.command_main | default("main.sh")}} {{os.name}} {{build_config.command}}"
             - "queue=True"
           kwargs:
             shell: /bin/bash
