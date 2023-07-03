@@ -30,7 +30,6 @@ build {
       "scripts/configure_environment.sh",
       "scripts/${local.os_name}/configure_proxy.sh",
       "scripts/${local.os_name}/uninstall_network.sh",
-      "scripts/${local.os_name}/fix_systemd_networkd.sh",
       "scripts/install_systemd-networkd.sh",
       "scripts/network_wait.sh",
       "scripts/${local.os_name}/setup_sb_uki.sh",
