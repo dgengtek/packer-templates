@@ -80,7 +80,7 @@ resources:
       username: ((registry.username))
       password: ((registry.password))
       repository: ((registry.registry))/((git_repo_name))
-      tag: ((docker_image_tag))
+      tag: ((image_packer_version))
 
 
   - name: pipelines
@@ -153,7 +153,7 @@ jobs:
               cwd: /data/tmp/packer-templates
               env:
                 - DOCKER_REGISTRY: ((registry.registry))
-                - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
+                - DOCKER_IMAGE_NAME: ((git_repo_name)):((image_packer_version))
                 - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
     plan:
@@ -204,7 +204,7 @@ jobs:
             cwd: /data/tmp/packer-templates
             env:
               - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):((image_packer_version))
               - http_proxy: ((vars.http_proxy))
               - https_proxy: ((vars.https_proxy))
               - no_proxy: ((vars.no_proxy))
@@ -246,7 +246,7 @@ jobs:
             env:
               - MC_HOST_data: "https://((minio/packer-templates.access_key)):((minio/packer-templates.secret_key))@((vars.minio_host_data))"
               - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):((image_packer_version))
               - http_proxy: ((vars.http_proxy))
               - https_proxy: ((vars.https_proxy))
               - no_proxy: ((vars.no_proxy))
@@ -312,7 +312,7 @@ jobs:
             cwd: /data/tmp/packer-templates
             env:
               - DOCKER_REGISTRY: ((registry.registry))
-              - DOCKER_IMAGE_NAME: ((git_repo_name)):((docker_image_tag))
+              - DOCKER_IMAGE_NAME: ((git_repo_name)):((image_packer_version))
               - PKR_VAR_build_directory: "/output/((.:git_ref))"
 
 
@@ -354,7 +354,7 @@ jobs:
           BUILD_ARG_http_proxy: ((vars.http_proxy))
           BUILD_ARG_no_proxy: ((vars.no_proxy))
           BUILD_ARG_author: ((author))
-          BUILD_ARG_packer_version: ((docker_image_tag))
+          BUILD_ARG_packer_version: ((image_packer_version))
 
       - put: r-docker-image-build
         attempts: 3
