@@ -36,6 +36,7 @@ locals {
     build_type = "kitchen"
     iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${local.os_boot_type}/${local.vm_name}.qcow2"
     iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${local.os_boot_type}/${local.vm_name}.sha256"
+    efi_firmware_vars = var.efi_firmware_vars != "" ? var.efi_firmware_vars : "${var.build_directory}/${local.os_boot_type}/efivars.fd"
   }
 }
 

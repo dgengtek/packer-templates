@@ -64,6 +64,8 @@ locals {
       "/99-dhcp-wildcard.network" = file("${path.cwd}/srv/99-dhcp-wildcard.network")
       "/install_chroot.sh"        = file("${path.cwd}/srv/archlinux/install_chroot.sh")
     }
+
+    efi_firmware_vars = var.efi_firmware_vars != "" ? var.efi_firmware_vars : "/usr/share/OVMF/OVMF_VARS.fd"
   }
 }
 

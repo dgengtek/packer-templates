@@ -80,7 +80,7 @@ locals {
       })
     }
 
-    efi_firmware_vars = var.efi_firmware_vars != "" ? var.efi_firmware_vars : "/usr/share/OVMF/OVMF_CODE.fd"
+    efi_firmware_vars = var.efi_firmware_vars != "" ? var.efi_firmware_vars : "/usr/share/OVMF/OVMF_VARS.fd"
   }
 }
 
