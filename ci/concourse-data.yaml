@@ -1,56 +1,36 @@
 config:
   - name: debian
     distribution: debian-12.0.0-amd64
+    boot_type: bios
+  - name: debian
+    distribution: debian-12.0.0-amd64
+    boot_type: uefi
   - name: archlinux
     distribution: archlinux-x86_64
+    boot_type: bios
+  - name: archlinux
+    distribution: archlinux-x86_64
+    boot_type: uefi
 
 builds:
-  base-bios:
+  base:
     command: "base"
     passed_build: ""
     archlinux:
       env:
         PKR_VAR_boot_wait: 30s
-  cloud-bios:
+  cloud:
     command: "cloud"
-    passed_build: base-bios
-  kitchen-bios:
+    passed_build: base
+  kitchen:
     command: "kitchen"
-    passed_build: base-bios
-  terminal-bios:
+    passed_build: base
+  terminal:
     command: "terminal"
-    passed_build: base-bios
-  salt-cloud-bios:
+    passed_build: base
+  salt-cloud:
     command: "salt cloud"
-    passed_build: cloud-bios
-  salt-kitchen-bios:
+    passed_build: cloud
+  salt-kitchen:
     command: "salt kitchen"
-    passed_build: kitchen-bios
-
-  base-uefi:
-    command_main: "main.sh --uefi"
-    command: "base"
-    passed_build: ""
-    archlinux:
-      env:
-        PKR_VAR_boot_wait: 30s
-  cloud-uefi:
-    command_main: "main.sh --uefi"
-    command: "cloud"
-    passed_build: base-uefi
-  kitchen-uefi:
-    command_main: "main.sh --uefi"
-    command: "kitchen"
-    passed_build: base-uefi
-  terminal-uefi:
-    command_main: "main.sh --uefi"
-    command: "terminal"
-    passed_build: base-uefi
-  salt-cloud-uefi:
-    command_main: "main.sh --uefi"
-    command: "salt cloud"
-    passed_build: cloud-uefi
-  salt-kitchen-uefi:
-    command_main: "main.sh --uefi"
-    command: "salt kitchen"
-    passed_build: kitchen-uefi
+    passed_build: kitchen

@@ -20,6 +20,7 @@ declare -i enable_quiet=0
 declare -i enable_debug=0
 declare -i enable_system_log=0
 declare -i enable_uefi=0
+declare -i download_uefi_vars=0
 readonly __script_name="${BASH_SOURCE[0]##*/}"
 readonly DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME:-$(basename $(dirname $(realpath -e "$0")))}
 readonly DOCKER_REGISTRY=${DOCKER_REGISTRY:-""}
@@ -167,6 +168,9 @@ parse_options() {
         ;;
       --enable-log)
         enable_system_log=1
+        ;;
+      --download-uefi-vars)
+        download_uefi_vars=1
         ;;
       --uefi)
         enable_uefi=1
@@ -371,10 +375,18 @@ _packer() {  # run packer in BUILD_DIRECTORY
     if [[ -z ${PKR_VAR_efi_firmware_code:-""} ]]; then
       PKR_VAR_efi_firmware_code="/usr/share/OVMF/OVMF_CODE.fd"
     else
-      args+=(--mount type=bind,source=$PKR_VAR_efi_firmware_code,target=/wd/OVMF_CODE.fd,readonly)
+      local -r ovmf_code_mountpoint="/OVMF_CODE.fd"
+      args+=(--mount type=bind,source=$PKR_VAR_efi_firmware_code,target=$ovmf_code_mountpoint,readonly)
+      PKR_VAR_efi_firmware_code=$ovmf_code_mountpoint
     fi
     if [[ -n ${PKR_VAR_efi_firmware_vars:-""} ]]; then
-      args+=(--mount type=bind,source=$PKR_VAR_efi_firmware_vars,target=/wd/OVMF_VARS.fd,readonly)
+      local -r ovmf_vars_mountpoint="/OVMF_VARS.fd"
+      if (($download_uefi_vars)); then
+        curl -o /tmp/efivars.fd "$PKR_VAR_efi_firmware_vars"
+        PKR_VAR_efi_firmware_vars="/tmp/efivars.fd"
+      fi
+      args+=(--mount type=bind,source=$PKR_VAR_efi_firmware_vars,target=$ovmf_vars_mountpoint,readonly)
+      PKR_VAR_efi_firmware_vars="$ovmf_vars_mountpoint"
     fi
     __add_env_var PKR_VAR_efi_firmware_code
     __add_env_var PKR_VAR_efi_firmware_vars

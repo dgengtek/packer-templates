@@ -96,7 +96,7 @@ locals {
   efi_boot_enabled = var.efi_firmware_code != ""
   raise_efi_error = local.efi_boot_enabled ? (local.v.efi_firmware_vars == "" ? file("ERROR: efi_firmware_vars is unset. Provide a default value") : null) : null
   os_name = split("-", var.distribution)[0]
-  boot_type = local.efi_boot_enabled ? "efi" : "bios"
+  boot_type = local.efi_boot_enabled ? "uefi" : "bios"
   os_boot_type = "${local.os_name}-${local.boot_type}"
   output_directory = var.output_directory != "" ? var.output_directory : local.v.build_type != "" ? "${var.build_directory}/${local.v.build_type}/${local.os_boot_type}" : "${var.build_directory}/${local.os_boot_type}"
   vm_name = join("", [
