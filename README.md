@@ -86,6 +86,18 @@ Build cloud image based on the new base image
     $ bash main.sh archlinux cloud
 
 
+## Building uefi images
+
+When using the wrapper without setting any environment variables it will use the OVMF from the docker image
+
+    $ bash main.sh --uefi debian base
+
+Export the required efi environment variables if you want to build without packer or want to provide your own OVMF which will be mounted into the docker container
+
+    $ export PKR_VAR_efi_firmware_code=<path to OVMF_CODE> PKR_VAR_efi_firmware_vars=<path to OVMF_VARS>
+    $ packer build ...
+
+
 ## Get built images
 
 
