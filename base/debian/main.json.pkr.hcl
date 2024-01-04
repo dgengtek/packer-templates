@@ -23,7 +23,8 @@ build {
       "no_proxy=${var.no_proxy}",
       "ENABLE_PKI_INSTALL=${var.enable_pki_install}",
       "VAULT_ADDR=${var.vault_addr}",
-      "VAULT_PKI_SECRETS_PATH=${var.vault_pki_secrets_path}"
+      "VAULT_PKI_SECRETS_PATH=${var.vault_pki_secrets_path}",
+      "efi_boot_enabled=${local.efi_boot_enabled}"
     ]
     execute_command  = "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'"
     scripts          = [

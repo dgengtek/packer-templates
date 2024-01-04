@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 ## use systemd-boot as uefi bootloader and create a unified kernel image to autodetect entries
 set -eux
+if [[ $efi_boot_enabled != "true" ]]; then
+  exit 0
+fi
 if ! test -d /sys/firmware/efi/efivars; then
   echo "EFI variables not available. Boot into EFI first." &>2
   exit 1

@@ -247,7 +247,9 @@ d-i partman-auto/expert_recipe string \
     573 100000 573 ext4 \
       $gptonly{ } \
       $primary{ } \
-%{ if ! efi_boot_enabled } $bootable{ } \ %{endif}
+%{ if ! efi_boot_enabled }
+      $bootable{ } \
+%{ endif }
       method{ format } \
       format{ } \
       use_filesystem{ } \
