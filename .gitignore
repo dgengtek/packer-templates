@@ -18,3 +18,4 @@ tags.lock
 
 # lxd builds
 *.tar.gz
+.env
