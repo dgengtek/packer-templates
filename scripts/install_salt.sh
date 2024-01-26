@@ -4,7 +4,7 @@ set -ex
 [ -n "$SALT_VERSION_TAG" ]
 [ -n "$SALT_GIT_URL" ]
 mkdir -p /opt
-readonly path_venv=/opt/venv
+readonly path_venv=/opt/saltstack-${SALT_VERSION_TAG}
 readonly path_salt_bin=/usr/local/bin
 
 curl -o bootstrap-salt.sh -L https://bootstrap.saltproject.io
@@ -31,29 +31,34 @@ systemctl mask salt-minion.service
 
 python3 -m venv "$path_venv"
 source "$path_venv/bin/activate"
-pip install --upgrade pip setuptools wheel pyyaml
+# pycurl torando for downloads over proxy required
+# cryptography for x509_v2
+pip install --upgrade pip setuptools wheel pyyaml cryptography pycurl tornado
 bash bootstrap-salt.sh \
   -dX \
   -x python3 \
   -g "$SALT_GIT_URL" \
   -H "$https_proxy" \
-  -j '{"master":["salt"],"master_type":"failover","master_alive_interval":30, "use_superseded":["module.run"], "auth_tries":10,"retry_dns":0,"master_tries":-1,"rejected_retry":true}' \
+  -j '{"master": "salt" ,"master_alive_interval":30, "use_superseded":["module.run"], "auth_tries":10,"retry_dns":0,"master_tries":-1,"rejected_retry":true}' \
   -r \
   -P \
   git ${SALT_VERSION_TAG}
+
 
 systemctl unmask salt-minion.service
 # redirecting creates a mask? need to copy in two steps
 systemctl cat salt-minion.service | sed "s,^ExecStart=.*,ExecStart=$path_salt_bin/salt-minion," > salt-minion.service
 cp -fv salt-minion.service /etc/systemd/system/
 rm salt-minion.service
-for bin in salt-api salt-call salt-cloud salt-cp salt-key salt-master salt-minion salt-pip salt-proxy salt-run salt-ssh; do
+for bin in salt salt-api salt-call salt-cloud salt-cp salt-key salt-master salt-minion salt-pip salt-proxy salt-run salt-ssh; do
   ln -s "$path_venv/bin/$bin" "$path_salt_bin/$bin"
 done
 systemctl enable salt-minion.service
 rm -f /etc/salt/minion_id
 # check that salt is available
+salt --version
 salt-call --version
 salt-minion --version
+sudo -u provision salt --version
 sudo -u provision salt-call --version
 sudo -u provision salt-minion --version
