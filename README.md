@@ -28,7 +28,7 @@ packer(the kernel, initrd and squashfs) over http and setting the kernel paramet
 
 Export the required environment variable
 
-    $ export PKR_VAR_distribution=debian-12.4.0-amd64
+    $ export PKR_VAR_distribution=debian-12.5.0-amd64
 
 
 Build the debian base image.
