@@ -395,6 +395,7 @@ _packer() {  # run packer in BUILD_DIRECTORY
   sudo docker run \
     --init \
     --env PKR_VAR_enable_pki_install="${PKR_VAR_enable_pki_install:-false}" \
+    --env PKR_VAR_enable_nix_install="${PKR_VAR_enable_nix_install:-false}" \
     --env PKR_VAR_vault_addr="${PKR_VAR_vault_addr:-https://vault:8200}" \
     --env PKR_VAR_vault_pki_secrets_path="${PKR_VAR_vault_pki_secrets_path:-pki}" \
     --device=/dev/kvm \

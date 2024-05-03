@@ -34,6 +34,11 @@ variable "enable_pki_install" {
   default = false
 }
 
+variable "enable_nix_install" {
+  type    = bool
+  default = false
+}
+
 variable "vault_addr" {
   type    = string
   default = ""

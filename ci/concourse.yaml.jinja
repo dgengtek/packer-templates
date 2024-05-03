@@ -221,6 +221,7 @@ jobs:
               - PKR_VAR_https_proxy: ((vars.https_proxy))
               - PKR_VAR_no_proxy: ((vars.no_proxy))
               - PKR_VAR_enable_pki_install: "true"
+              - PKR_VAR_enable_nix_install: "true"
               - PKR_VAR_vault_addr: ((vars.vault_addr))
               - PKR_VAR_vault_pki_secrets_path: ((vars.vault_pki_path))
               - PKR_VAR_build_directory: "/output/((.:git_ref))"

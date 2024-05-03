@@ -22,6 +22,7 @@ build {
       "https_proxy=${var.https_proxy}",
       "no_proxy=${var.no_proxy}",
       "ENABLE_PKI_INSTALL=${var.enable_pki_install}",
+      "ENABLE_NIX_INSTALL=${var.enable_nix_install}",
       "VAULT_ADDR=${var.vault_addr}",
       "VAULT_PKI_SECRETS_PATH=${var.vault_pki_secrets_path}",
       "efi_boot_enabled=${local.efi_boot_enabled}"
@@ -36,6 +37,7 @@ build {
       "scripts/${local.os_name}/setup_sb_uki.sh",
       "scripts/${local.os_name}/install_requisites.sh",
       "scripts/${local.os_name}/install_pki.sh",
+      "scripts/setup_nix_daemon.sh",
       "srv/enable_ssh.sh",
       "scripts/${local.os_name}/cleanup.sh",
       "scripts/cleanup_host.sh",
