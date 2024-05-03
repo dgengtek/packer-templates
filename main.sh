@@ -24,6 +24,7 @@ declare -i download_uefi_vars=0
 readonly __script_name="${BASH_SOURCE[0]##*/}"
 readonly DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME:-$(basename $(dirname $(realpath -e "$0")))}
 readonly DOCKER_REGISTRY=${DOCKER_REGISTRY:-""}
+readonly DOCKERFILE_FROM_IMAGE=${DOCKERFILE_FROM_IMAGE:-}
 readonly PACKER_CACHE_DIR=${PACKER_CACHE_DIR:-/var/cache/packer}
 # for image url with registry
 declare image_name=$DOCKER_IMAGE_NAME
