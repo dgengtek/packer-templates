@@ -1,7 +1,7 @@
 ARG dockerfile_from_image=debian:bookworm-slim
 FROM ${dockerfile_from_image} as tmp
 
-ARG packer_version=1.9.1
+ARG packer_version=1.10.3
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y unzip \

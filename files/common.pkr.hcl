@@ -137,3 +137,13 @@ source "qemu" "main" {
   efi_firmware_code = "${var.efi_firmware_code}"
   efi_firmware_vars = local.efi_boot_enabled ? local.v.efi_firmware_vars : ""
 }
+
+
+packer {
+  required_plugins {
+    qemu = {
+      version = "~> 1"
+      source  = "github.com/hashicorp/qemu"
+    }
+  }
+}
