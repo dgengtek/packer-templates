@@ -19,7 +19,7 @@ build {
       "https_proxy=${var.https_proxy}",
       "no_proxy=${var.no_proxy}",
     ]
-    scripts         = ["scripts/network_wait.sh", "scripts/add_root_keys.sh", "scripts/${local.os_name}/setup_ansible.sh"]
+    scripts = ["scripts/network_wait.sh", "scripts/add_root_keys.sh", "scripts/${local.os_name}/setup_ansible.sh"]
   }
 
   provisioner "ansible" {
@@ -34,8 +34,8 @@ build {
   }
 
   post-processor "checksum" {
-    checksum_types = ["sha256"]
-    output = "${local.output_directory}/${local.vm_name}.sha256"
+    checksum_types      = ["sha256"]
+    output              = "${local.output_directory}/${local.vm_name}.sha256"
     keep_input_artifact = true
   }
 }
@@ -43,15 +43,15 @@ build {
 
 locals {
   v = {
-    build_type = "kubernetes"
-    iso_url = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${local.os_boot_type}/${local.vm_name}.qcow2"
-    iso_checksum = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${local.os_boot_type}/${local.vm_name}.sha256"
+    build_type        = "kubernetes"
+    iso_url           = var.iso_url != "" ? var.iso_url : "${var.build_directory}/${local.os_boot_type}/${local.vm_name}.qcow2"
+    iso_checksum      = var.iso_checksum != "" ? var.iso_checksum : "file:${var.build_directory}/${local.os_boot_type}/${local.vm_name}.sha256"
     efi_firmware_vars = var.efi_firmware_vars != "" ? var.efi_firmware_vars : "${var.build_directory}/${local.os_boot_type}/efivars.fd"
   }
 }
 
 
 variable "disk_size" {
-  type = string
+  type    = string
   default = "10G"
 }

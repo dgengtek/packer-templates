@@ -3,7 +3,7 @@ build {
 
   provisioner "shell" {
     inline       = ["echo 'wait for qemu reboot'"]
-    only             = ["qemu.main"]
+    only         = ["qemu.main"]
     pause_before = "15s"
   }
 
@@ -27,8 +27,8 @@ build {
       "VAULT_PKI_SECRETS_PATH=${var.vault_pki_secrets_path}",
       "efi_boot_enabled=${local.efi_boot_enabled}"
     ]
-    execute_command  = "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'"
-    scripts          = [
+    execute_command = "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'"
+    scripts = [
       "scripts/configure_environment.sh",
       "scripts/${local.os_name}/configure_proxy.sh",
       "scripts/${local.os_name}/uninstall_network.sh",
@@ -55,9 +55,9 @@ build {
 
 locals {
   v = {
-    build_type = ""
+    build_type       = ""
     output_directory = "${var.build_directory}/${local.os_name}"
-    boot_command     = [
+    boot_command = [
       "%{if local.efi_boot_enabled}<esc><wait>e<down><down><down><end>%{else}<esc><wait>%{endif}",
       "install",
       " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg",
@@ -76,9 +76,9 @@ locals {
     ]
     disk_image = false
 
-    http_content            = {
+    http_content = {
       "/preseed.cfg" = templatefile("${path.cwd}/srv/debian/preseed.pkrtpl", {
-        http_proxy = var.http_proxy
+        http_proxy       = var.http_proxy
         efi_boot_enabled = local.efi_boot_enabled
       })
     }
@@ -89,6 +89,6 @@ locals {
 
 
 variable "disk_size" {
-  type = string
+  type    = string
   default = "4G"
 }

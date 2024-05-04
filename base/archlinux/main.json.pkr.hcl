@@ -2,7 +2,7 @@ build {
   sources = ["source.qemu.main"]
 
   provisioner "shell" {
-    environment_vars  = [
+    environment_vars = [
       "http_proxy=${var.http_proxy}",
       "https_proxy=${var.https_proxy}",
       "no_proxy=${var.no_proxy}",
@@ -31,7 +31,7 @@ build {
       "VAULT_PKI_SECRETS_PATH=${var.vault_pki_secrets_path}"
     ]
     execute_command = "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'"
-    scripts         = [
+    scripts = [
       "scripts/configure_environment.sh",
       "scripts/${local.os_name}/configure_proxy.sh",
       "scripts/install_systemd-networkd.sh",
