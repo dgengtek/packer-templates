@@ -58,7 +58,7 @@ variable "disk_size" {
 
 variable "salt_version_tag" {
   type = string
-  default = "v3006.1"
+  default = "v3007.0"
 }
 
 
