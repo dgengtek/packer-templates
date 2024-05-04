@@ -19,3 +19,8 @@ chmod +x $nix_installer
 
 export NIX_BUILD_GROUP_ID NIX_FIRST_BUILD_UID
 $nix_installer --daemon --yes
+
+cat > /etc/nix/nix.conf << EOF
+build-users-group = nixbld
+experimental-features = nix-command flakes
+EOF
