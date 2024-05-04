@@ -44,16 +44,15 @@ bash bootstrap-salt.sh \
   -P \
   git ${SALT_VERSION_TAG}
 
-
 systemctl unmask salt-minion.service
-# redirecting creates a mask? need to copy in two steps
-systemctl cat salt-minion.service | sed "s,^ExecStart=.*,ExecStart=$path_salt_bin/salt-minion," > salt-minion.service
-cp -fv salt-minion.service /etc/systemd/system/
-rm salt-minion.service
+systemctl cat salt-minion.service | sed "s,^ExecStart=.*,ExecStart=$path_salt_bin/salt-minion," > /etc/systemd/system/salt-minion.service
 for bin in salt salt-api salt-call salt-cloud salt-cp salt-key salt-master salt-minion salt-pip salt-proxy salt-run salt-ssh; do
   ln -s "$path_venv/bin/$bin" "$path_salt_bin/$bin"
 done
 systemctl enable salt-minion.service
+# running service not required for kitchen
+[[ $parent_image_type == "kitchen" ]] && ln -sf /dev/null /etc/systemd/system/salt-minion.service
+
 rm -f /etc/salt/minion_id
 # check that salt is available
 salt --version
