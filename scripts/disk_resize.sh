@@ -16,4 +16,6 @@ sudo partprobe "$DEV_DISK"
 
 if [[ $enable_lvm_partitioning == "true" ]]; then
   sudo pvresize ${DEV_DISK}${DEV_PARTITION_NR}
+else
+  sudo resize2fs ${DEV_DISK}${DEV_PARTITION_NR}
 fi
