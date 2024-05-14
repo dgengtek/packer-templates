@@ -80,6 +80,7 @@ locals {
       "/preseed.cfg" = templatefile("${path.cwd}/srv/debian/preseed.pkrtpl", {
         http_proxy       = var.http_proxy
         efi_boot_enabled = local.efi_boot_enabled
+        enable_lvm_partitioning = var.enable_lvm_partitioning
       })
     }
 

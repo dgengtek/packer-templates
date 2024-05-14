@@ -39,6 +39,12 @@ variable "enable_nix_install" {
   default = false
 }
 
+variable "enable_lvm_partitioning" {
+  type    = bool
+  default = true
+  description = "Use LVM to create logical volumes for directories /, /home, /var, /tmp"
+}
+
 variable "vault_addr" {
   type    = string
   default = ""

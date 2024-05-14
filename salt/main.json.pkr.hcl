@@ -2,16 +2,27 @@ build {
   sources = ["source.qemu.main"]
 
   provisioner "shell" {
-    environment_vars = ["DEV_DISK=/dev/vda", "DEV_PARTITION_NR=3"]
+    environment_vars = [
+      "DEV_DISK=/dev/vda",
+      "DEV_PARTITION_NR=3",
+      "enable_lvm_partitioning=${var.enable_lvm_partitioning}",
+    ]
     execute_command  = "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'"
-    only             = ["qemu"]
+    only             = ["qemu.main"]
     scripts          = ["scripts/disk_resize.sh"]
   }
 
   provisioner "shell" {
-    inline         = ["sudo lvresize -r -l +70%FREE vg_host/lv_var", "sudo lvresize -r -l +100%FREE vg_host/lv_root"]
+    environment_vars = [
+      "enable_lvm_partitioning=${var.enable_lvm_partitioning}",
+    ]
+    inline         = [
+      "if [[ $enable_lvm_partitioning != 'true' ]]; then exit 0; fi",
+      "sudo lvresize -r -l +50%FREE vg_host/lv_var",
+      "sudo lvresize -r -l +100%FREE vg_host/lv_root"
+    ]
     inline_shebang = "/bin/bash -ex"
-    only           = ["qemu"]
+    only           = ["qemu.main"]
   }
 
   provisioner "shell" {
@@ -22,7 +33,8 @@ build {
       "https_proxy=${var.https_proxy}",
       "no_proxy=${var.no_proxy}",
       "SALT_VERSION_TAG=${var.salt_version_tag}",
-      "SALT_GIT_URL=${var.salt_git_url}"
+      "SALT_GIT_URL=${var.salt_git_url}",
+      "enable_nix_install=${var.enable_nix_install}",
     ]
     scripts = [
       "scripts/network_wait.sh",

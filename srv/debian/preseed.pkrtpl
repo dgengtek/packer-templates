@@ -165,7 +165,11 @@ d-i clock-setup/ntp boolean true
 # - regular: use the usual partition types for your architecture
 # - lvm:     use LVM to partition the disk
 # - crypto:  use LVM within an encrypted partition
+%{ if ! enable_lvm_partitioning }
+d-i partman-auto/method string regular
+%{ else }
 d-i partman-auto/method string lvm
+%{ endif }
 
 # You can define the amount of space that will be used for the LVM volume
 # group. It can either be a size with its unit (eg. 20 GB), a percentage of
@@ -244,7 +248,7 @@ d-i partman-auto/expert_recipe string \
       method{ biosgrub } \
     . \
 %{ endif }
-    573 100000 573 ext4 \
+    535 100000 535 ext4 \
       $gptonly{ } \
       $primary{ } \
 %{ if ! efi_boot_enabled }
@@ -252,10 +256,19 @@ d-i partman-auto/expert_recipe string \
 %{ endif }
       method{ format } \
       format{ } \
+      label{ boot } \
       use_filesystem{ } \
       filesystem{ ext4 } \
       mountpoint{ /boot } \
     . \
+%{ if ! enable_lvm_partitioning }
+    500 1000 -1 ext4 \
+      $gptonly{ } \
+      method{ format } format{ } \
+      label{ root } \
+      use_filesystem{ } filesystem{ ext4 } \
+      mountpoint{ / } \
+%{ else }
     1 100000 -1 ext4 \
       $gptonly{ } \
       $primary{ } \
@@ -268,6 +281,7 @@ d-i partman-auto/expert_recipe string \
       lv_name{ lv_root } \
       method{ format } \
       format{ } \
+      label{ root } \
       use_filesystem{ } \
       filesystem{ ext4 } \
       mountpoint{ / } \
@@ -278,6 +292,7 @@ d-i partman-auto/expert_recipe string \
       lv_name{ lv_home } \
       method{ format } \
       format{ } \
+      label{ home } \
       use_filesystem{ } \
       filesystem{ ext4 } \
       mountpoint{ /home } \
@@ -288,6 +303,7 @@ d-i partman-auto/expert_recipe string \
       lv_name{ lv_tmp } \
       method{ format } \
       format{ } \
+      label{ tmp } \
       use_filesystem{ } \
       filesystem{ ext4 } \
       mountpoint{ /tmp } \
@@ -298,9 +314,11 @@ d-i partman-auto/expert_recipe string \
       lv_name{ lv_var } \
       method{ format } \
       format{ } \
+      label{ var } \
       use_filesystem{ } \
       filesystem{ ext4 } \
       mountpoint{ /var } \
+%{ endif }
     .
 
 

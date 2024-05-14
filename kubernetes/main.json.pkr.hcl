@@ -2,14 +2,27 @@ build {
   sources = ["source.qemu.main"]
 
   provisioner "shell" {
-    environment_vars = ["DEV_DISK=/dev/vda", "DEV_PARTITION_NR=3"]
+    environment_vars = [
+      "DEV_DISK=/dev/vda",
+      "DEV_PARTITION_NR=3",
+      "enable_lvm_partitioning=${var.enable_lvm_partitioning}",
+    ]
     execute_command  = "{{ .Vars }} sudo -nE bash -c '{{ .Path }}'"
+    only             = ["qemu.main"]
     scripts          = ["scripts/disk_resize.sh"]
   }
 
   provisioner "shell" {
-    inline         = ["sudo lvresize -r -l +100%FREE vg_host/lv_var"]
+    environment_vars = [
+      "enable_lvm_partitioning=${var.enable_lvm_partitioning}",
+    ]
+    inline         = [
+      "if [[ $enable_lvm_partitioning != 'true' ]]; then exit 0; fi",
+      "sudo lvresize -r -l +50%FREE vg_host/lv_var",
+      "sudo lvresize -r -l +100%FREE vg_host/lv_root"
+    ]
     inline_shebang = "/bin/bash -ex"
+    only           = ["qemu.main"]
   }
 
   provisioner "shell" {
