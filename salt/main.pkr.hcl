@@ -35,6 +35,7 @@ build {
       "SALT_VERSION_TAG=${var.salt_version_tag}",
       "SALT_GIT_URL=${var.salt_git_url}",
       "enable_nix_install=${var.enable_nix_install}",
+      "nix_flake_salt_pkg=${var.nix_flake_salt_pkg}",
     ]
     scripts = [
       "scripts/network_wait.sh",

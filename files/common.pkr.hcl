@@ -37,6 +37,12 @@ variable "enable_pki_install" {
 variable "enable_nix_install" {
   type    = bool
   default = false
+  description = "install nix package manager to host"
+}
+
+variable "nix_flake_salt_pkg" {
+  type    = string
+  default = "github:NixOS/nixpkgs#salt"
 }
 
 variable "enable_lvm_partitioning" {
