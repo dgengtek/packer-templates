@@ -5,10 +5,15 @@ set -ex
 [ -n "$SALT_GIT_URL" ]
 [ -n "$enable_nix_install" ]
 
+readonly path_salt_bin=/usr/local/bin
+declare path_salt=""
+
+
 __install_from_nix() {
   [ -n "$nix_flake_salt_pkg" ]
   source /etc/profile.d/nix.sh
   nix profile install --no-write-lock-file ${nix_flake_salt_pkg}
+  path_salt=$(nix eval --raw ${nix_flake_salt_pkg})
 
   mkdir -p /etc/salt
   cat > /etc/salt/minion << EOF
@@ -33,23 +38,24 @@ NotifyAccess=all
 LimitNOFILE=8192
 Restart=always
 RestartSec=3min
-ExecStart=$(nix eval --raw ${nix_flake_salt_pkg})/bin/salt-minion
+ExecStart=${path_salt_bin}/salt-minion
 KillMode=process
 
 [Install]
 WantedBy=multi-user.target
 EOF
-  systemctl enable salt-minion.service
   # running service not required for kitchen
-  [[ $parent_image_type == "kitchen" ]] && ln -sf /dev/null /etc/systemd/system/salt-minion.service
-  exit 0
-
+  if [[ $parent_image_type == "kitchen" ]]; then
+    ln -sf /dev/null /etc/systemd/system/salt-minion.service
+  else
+    systemctl enable salt-minion.service
+  fi
 }
 
 __install_from_pip() {
   mkdir -p /opt
   readonly path_venv=/opt/saltstack-${SALT_VERSION_TAG}
-  readonly path_salt_bin=/usr/local/bin
+  path_salt=$path_venv
 
   curl -o bootstrap-salt.sh -L https://bootstrap.saltproject.io
 
@@ -90,21 +96,13 @@ EOF
 
   systemctl unmask salt-minion.service
   systemctl cat salt-minion.service | sed "s,^ExecStart=.*,ExecStart=$path_salt_bin/salt-minion," > /etc/systemd/system/salt-minion.service
-  for bin in salt salt-api salt-call salt-cloud salt-cp salt-key salt-master salt-minion salt-pip salt-proxy salt-run salt-ssh; do
-    ln -s "$path_venv/bin/$bin" "$path_salt_bin/$bin"
-  done
-  systemctl enable salt-minion.service
   # running service not required for kitchen
-  [[ $parent_image_type == "kitchen" ]] && ln -sf /dev/null /etc/systemd/system/salt-minion.service
+  if [[ $parent_image_type == "kitchen" ]]; then
+    ln -sf /dev/null /etc/systemd/system/salt-minion.service
+  else
+    systemctl enable salt-minion.service
+  fi
 
-  rm -f /etc/salt/minion_id
-  # check that salt is available
-  salt --version
-  salt-call --version
-  salt-minion --version
-  sudo -u provision salt --version
-  sudo -u provision salt-call --version
-  sudo -u provision salt-minion --version
 
 }
 
@@ -113,3 +111,15 @@ if [[ $enable_nix_install == "true" ]]; then
 else
   __install_from_pip
 fi
+for bin in salt salt-api salt-call salt-cloud salt-cp salt-key salt-master salt-minion salt-pip salt-proxy salt-run salt-ssh; do
+  ln -s "${path_salt}/bin/$bin" "$path_salt_bin/$bin"
+done
+
+rm -f /etc/salt/minion_id
+# check that salt is available
+salt --version
+salt-call --version
+salt-minion --version
+sudo -u provision salt --version
+sudo -u provision salt-call --version
+sudo -u provision salt-minion --version
