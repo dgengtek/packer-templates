@@ -42,7 +42,12 @@ variable "enable_nix_install" {
 
 variable "nix_flake_salt_pkg" {
   type    = string
-  default = "github:NixOS/nixpkgs#salt"
+  default = "#salt"
+}
+
+variable "nixpkgs_url" {
+  type    = string
+  default = "github:NixOS/nixpkgs/nixos-23.11"
 }
 
 variable "enable_lvm_partitioning" {

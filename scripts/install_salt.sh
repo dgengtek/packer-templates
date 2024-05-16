@@ -10,8 +10,10 @@ declare path_salt=""
 
 
 __install_from_nix() {
+  [ -n "$nixpkgs_url" ]
   [ -n "$nix_flake_salt_pkg" ]
   source /etc/profile.d/nix.sh
+  nix profile install "${nixpkgs_url}#git"
   nix profile install --no-write-lock-file ${nix_flake_salt_pkg}
   path_salt=$(nix eval --raw ${nix_flake_salt_pkg})
 
